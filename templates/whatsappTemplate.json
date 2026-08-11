@@ -1,0 +1,3 @@
+{
+  "billReady": "🍽 {{shopName}}\nThank you for visiting ❤️\n\nBill Number:\n{{billCode}}\n\nAmount:\n₹{{amount}}\n\nView your bill\n{{billLink}}\n\nThank you."
+}

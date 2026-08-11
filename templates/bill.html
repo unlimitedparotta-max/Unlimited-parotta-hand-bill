@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{pageTitle}}</title>
+<style>
+  :root{--bg:#141110;--card:#1c1815;--line:#3a332a;--cream:#f2ead9;--muted:#a89c86;--copper:#d97a34;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--cream);padding:20px;}
+  .card{max-width:480px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 20px;}
+  .shop-name{font-size:24px;font-weight:800;text-align:center;letter-spacing:0.02em;}
+  .tagline,.addr{text-align:center;color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .rule{border-top:1px solid var(--line);margin:16px 0;}
+  .meta div{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;}
+  .meta .lbl{color:var(--muted);}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th,td{padding:7px 4px;text-align:left;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-size:11px;text-transform:uppercase;}
+  td.num,th.num{text-align:right;}
+  .total-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;}
+  .grand{font-size:20px;font-weight:800;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;}
+  .words{text-align:center;color:var(--muted);font-size:12px;font-style:italic;margin-top:6px;}
+  .thanks{text-align:center;font-weight:700;margin-top:18px;}
+  .actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+  .btn{display:block;text-align:center;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px;}
+  .btn-primary{background:var(--copper);color:#1a1209;}
+  .btn-outline{background:transparent;border:1px solid var(--line);color:var(--cream);font-family:inherit;cursor:pointer;width:100%;}
+</style>
+</head>
+<body>
+  <div class="card">
+    {{logoBlock}}
+    <div class="shop-name">{{shopName}}</div>
+    <div class="tagline">{{tagline}}</div>
+    {{addressBlock}}
+    {{phoneBlock}}
+    <div class="rule"></div>
+    <div class="meta">
+      <div><span class="lbl">Bill No</span><span>{{billCode}}</span></div>
+      <div><span class="lbl">Date</span><span>{{date}}</span></div>
+      <div><span class="lbl">Time</span><span>{{time}}</span></div>
+      {{tableRow}}
+      <div><span class="lbl">Payment</span><span>{{paymentLabel}}</span></div>
+      {{customerRow}}
+      {{mobileRow}}
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Item</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr></thead>
+      <tbody>{{itemRows}}</tbody>
+    </table>
+    <div class="total-row"><span>Sub Total</span><span>{{subTotal}}</span></div>
+    <div class="total-row grand"><span>GRAND TOTAL</span><span>₹{{grandTotal}}</span></div>
+    <div class="words">({{amountWords}})</div>
+    <div class="thanks">Thank You! Visit Again! 🙏</div>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{pdfUrl}}">⬇ Download PDF</a>
+      <button class="btn btn-outline" onclick="if(navigator.share){navigator.share({title:document.title,url:location.href})}else{navigator.clipboard.writeText(location.href);alert('Link copied!');}">🔗 Share Bill</button>
+      {{reviewBlock}}
+    </div>
+  </div>
+</body>
+</html>

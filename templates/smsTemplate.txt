@@ -1,0 +1,12 @@
+Not wired up yet — the SMS message is still built client-side in
+public/app.js (buildBillMessage) for now, so this file isn't read by any
+code yet. It's here so a future step can move that message-building
+server-side (matching how templates/whatsappTemplate.json already works)
+without adding a new file later.
+
+Suggested wording, matching your approved WhatsApp template's tone:
+
+{{shopName}}
+Your digital bill is ready.
+View Bill
+{{billLink}}
