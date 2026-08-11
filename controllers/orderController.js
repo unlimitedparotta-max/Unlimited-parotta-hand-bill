@@ -10,14 +10,30 @@ const { ALLOWED_IMAGE_EXT } = require('../utils/constants');
 const { getMenus, saveMenus } = require('../services/menuService');
 const { uploadFile } = require('../services/supabaseService');
 
-function getState(req, res) {
-  const db = readDb();
-  res.json({
-    role: req.role,
-    menus: db.menus,
-    billCounter: db.billCounter,
-    users: req.role === 'admin' ? db.users : undefined
-  });
+async function getState(req, res) {
+  try {
+    const db = readDb();
+
+    let menus = await getMenus();
+
+    if (!menus) {
+      menus = db.menus;
+      await saveMenus(menus);
+    }
+
+    res.json({
+      role: req.role,
+      menus,
+      billCounter: db.billCounter,
+      users: req.role === 'admin' ? db.users : undefined
+    });
+  } catch (e) {
+    console.error('getState error:', e);
+
+    res.status(500).json({
+      error: e.message || 'Could not load application state'
+    });
+  }
 }
 
 function getOrders(req, res) {
