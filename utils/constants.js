@@ -3,10 +3,9 @@
 // templates all read from this file.
 const path = require('path');
 
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
+const DATA_DIR = process.env.DATA_DIR || '/tmp';
 const DB_PATH = path.join(DATA_DIR, 'db.json');
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'uploads');
-
+const UPLOAD_DIR = process.env.UPLOAD_DIR || '/tmp/uploads';
 const SHOP_INFO = {
   name: 'UNLIMITED PAROTTA',
   tagline: 'Taste Unlimited. Happiness Unlimited.',
