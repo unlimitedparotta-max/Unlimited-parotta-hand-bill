@@ -1,24 +1,10 @@
 /* =========================================================
    UNLIMITED PAROTTA
-   Thermal Receipt Printer
-   Optimized for 80mm / 58mm thermal printers
-
-   Usage:
-       printReceipt(order);
-
-   Paper:
-       setReceiptPaperWidth(80);
-       setReceiptPaperWidth(58);
-========================================================= */
-
-
-/* =========================================================
-   SHOP DETAILS
-========================================================= */
+   80mm THERMAL RECEIPT PRINTER
+   ========================================================= */
 
 const RECEIPT_SHOP = {
   name: 'UNLIMITED PAROTTA',
-
   tagline: 'Taste Unlimited. Happiness Unlimited.',
 
   addressLines: [
@@ -37,8 +23,8 @@ const RECEIPT_SHOP = {
 
 
 /* =========================================================
-   PAPER WIDTH
-========================================================= */
+   PAPER SIZE
+   ========================================================= */
 
 const RECEIPT_PAPER_KEY = 'up_paperwidth';
 
@@ -48,8 +34,8 @@ let RECEIPT_PAPER_WIDTH =
     : 80;
 
 
+/* Change paper width */
 function setReceiptPaperWidth(width) {
-
   RECEIPT_PAPER_WIDTH =
     Number(width) === 58 ? 58 : 80;
 
@@ -61,22 +47,30 @@ function setReceiptPaperWidth(width) {
 
 
 /* =========================================================
-   BASIC HELPERS
-========================================================= */
+   HELPERS
+   ========================================================= */
+
+function escapeReceiptHTML(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 
 function receiptMoney(value) {
-
   const amount = Number(value || 0);
 
   return '₹' + amount.toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2
   });
 }
 
 
 function receiptDate(iso) {
-
   const d = new Date(iso);
 
   if (Number.isNaN(d.getTime())) {
@@ -87,12 +81,11 @@ function receiptDate(iso) {
     String(d.getDate()).padStart(2, '0'),
     String(d.getMonth() + 1).padStart(2, '0'),
     d.getFullYear()
-  ].join('-');
+  ].join(' ');
 }
 
 
 function receiptTime(iso) {
-
   const d = new Date(iso);
 
   if (Number.isNaN(d.getTime())) {
@@ -113,17 +106,23 @@ function receiptTime(iso) {
     hour = 12;
   }
 
-  return `${String(hour).padStart(2, '0')}:${minute} ${ampm}`;
+  return (
+    String(hour).padStart(2, '0') +
+    ':' +
+    minute +
+    ' ' +
+    ampm
+  );
 }
 
 
 /* =========================================================
-   BILL NUMBER
-========================================================= */
+   BILL CODE
+   ========================================================= */
 
 function receiptBillCode(order) {
 
-  if (order && order.billCode) {
+  if (order.billCode) {
     return order.billCode;
   }
 
@@ -144,7 +143,8 @@ function receiptBillCode(order) {
     String(d.getDate()).padStart(2, '0');
 
   const no =
-    String(order.billNo ?? '').padStart(4, '0');
+    String(order.billNo ?? '')
+      .padStart(4, '0');
 
   return `${prefix}${yy}${mm}${dd}${no}`;
 }
@@ -152,7 +152,7 @@ function receiptBillCode(order) {
 
 /* =========================================================
    AMOUNT IN WORDS
-========================================================= */
+   ========================================================= */
 
 function receiptAmountInWords(amount) {
 
@@ -247,7 +247,8 @@ function receiptAmountInWords(amount) {
     result +=
       underThousand(
         Math.floor(amount / 10000000)
-      ) + ' Crore';
+      ) +
+      ' Crore';
 
     amount %= 10000000;
 
@@ -262,7 +263,8 @@ function receiptAmountInWords(amount) {
     result +=
       underThousand(
         Math.floor(amount / 100000)
-      ) + ' Lakh';
+      ) +
+      ' Lakh';
 
     amount %= 100000;
 
@@ -277,7 +279,8 @@ function receiptAmountInWords(amount) {
     result +=
       underThousand(
         Math.floor(amount / 1000)
-      ) + ' Thousand';
+      ) +
+      ' Thousand';
 
     amount %= 1000;
 
@@ -297,23 +300,8 @@ function receiptAmountInWords(amount) {
 
 
 /* =========================================================
-   HTML ESCAPE
-========================================================= */
-
-function escapeReceiptHTML(value) {
-
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-
-/* =========================================================
-   MAIN PRINT FUNCTION
-========================================================= */
+   PRINT RECEIPT
+   ========================================================= */
 
 function printReceipt(order) {
 
@@ -327,11 +315,18 @@ function printReceipt(order) {
   }
 
 
+  /* Always use thermal paper */
+  const paper =
+    RECEIPT_PAPER_WIDTH === 58
+      ? 58
+      : 80;
+
+
   const printWindow =
     window.open(
       '',
       '_blank',
-      'width=420,height=700'
+      'width=400,height=700,scrollbars=yes'
     );
 
 
@@ -345,14 +340,7 @@ function printReceipt(order) {
   }
 
 
-  const paper =
-    RECEIPT_PAPER_WIDTH === 58
-      ? 58
-      : 80;
-
-
-  const shop =
-    RECEIPT_SHOP;
+  const shop = RECEIPT_SHOP;
 
 
   const total =
@@ -363,18 +351,18 @@ function printReceipt(order) {
     String(
       order.paymentMethod || ''
     ).toLowerCase() === 'gpay'
-      ? 'UPI / GPay'
+      ? 'GPay / UPI'
       : 'Cash';
 
 
   /* =======================================================
      ITEMS
-  ======================================================= */
+     ======================================================= */
 
   let itemsHTML = '';
 
 
-  (order.items || []).forEach(item => {
+  for (const item of (order.items || [])) {
 
     const name =
       String(item.name || 'Item');
@@ -388,11 +376,13 @@ function printReceipt(order) {
     const amount =
       price === 0
         ? 'FREE'
-        : receiptMoney(price * qty);
+        : receiptMoney(
+            price * qty
+          );
 
 
     itemsHTML += `
-      <div class="item-row">
+      <div class="item">
 
         <div class="item-name">
           ${escapeReceiptHTML(name)}
@@ -402,18 +392,18 @@ function printReceipt(order) {
           ${qty}
         </div>
 
-        <div class="item-amount">
+        <div class="item-price">
           ${amount}
         </div>
 
       </div>
     `;
-  });
+  }
 
 
   /* =======================================================
      CUSTOMER
-  ======================================================= */
+     ======================================================= */
 
   let customerHTML = '';
 
@@ -424,25 +414,20 @@ function printReceipt(order) {
   ) {
 
     customerHTML += `
-      <div class="divider"></div>
+      <div class="line"></div>
     `;
 
 
     if (order.customerName) {
 
       customerHTML += `
-        <div class="detail-row">
-
-          <span class="label">
-            Customer
-          </span>
-
-          <span class="value">
+        <div class="detail">
+          <span>Customer</span>
+          <strong>
             ${escapeReceiptHTML(
               order.customerName
             )}
-          </span>
-
+          </strong>
         </div>
       `;
     }
@@ -451,18 +436,13 @@ function printReceipt(order) {
     if (order.customerMobile) {
 
       customerHTML += `
-        <div class="detail-row">
-
-          <span class="label">
-            Mobile
-          </span>
-
-          <span class="value">
+        <div class="detail">
+          <span>Mobile</span>
+          <strong>
             +91 ${escapeReceiptHTML(
               order.customerMobile
             )}
-          </span>
-
+          </strong>
         </div>
       `;
     }
@@ -470,8 +450,8 @@ function printReceipt(order) {
 
 
   /* =======================================================
-     PRINT HTML
-  ======================================================= */
+     HTML PRINT DOCUMENT
+     ======================================================= */
 
   printWindow.document.open();
 
@@ -493,9 +473,9 @@ Unlimited Parotta Receipt
 
 <style>
 
-/* =======================================================
-   PAGE
-======================================================= */
+/* =========================================================
+   THERMAL PAPER
+   ========================================================= */
 
 @page {
 
@@ -506,85 +486,74 @@ Unlimited Parotta Receipt
 }
 
 
-/* =======================================================
-   RESET
-======================================================= */
-
-* {
-
-  box-sizing: border-box;
-
-}
-
-
-html,
-body {
-
-  margin: 0 !important;
-
-  padding: 0 !important;
+html {
 
   width: ${paper}mm;
 
-  background: #ffffff;
+  margin: 0;
+
+  padding: 0;
 
 }
 
 
-/* =======================================================
-   BODY
-======================================================= */
-
 body {
+
+  width: ${paper}mm;
+
+  margin: 0;
+
+  padding: 0;
+
+  background: white;
+
+  color: black;
 
   font-family:
     Arial,
     Helvetica,
     sans-serif;
 
-  color: #000;
-
   font-size:
-    ${paper === 58 ? '8px' : '9px'};
+    ${paper === 58 ? '9px' : '10px'};
 
-  line-height: 1.05;
+  line-height: 1.18;
 
   font-weight: 500;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    RECEIPT CONTAINER
-======================================================= */
+   ========================================================= */
 
 #receipt {
 
   width: ${paper}mm;
 
+  max-width: ${paper}mm;
+
   margin: 0;
 
   padding:
-    1mm
-    2mm
-    0
-    2mm;
+    1.5mm
+    2.5mm
+    1.5mm
+    2.5mm;
+
+  box-sizing: border-box;
 
 }
 
 
-/* =======================================================
-   HEADER
-======================================================= */
-
-.header {
-
-  text-align: center;
-
-}
-
+/* =========================================================
+   SHOP HEADER
+   ========================================================= */
 
 .shop-name {
+
+  text-align: center;
 
   font-size:
     ${paper === 58 ? '14px' : '16px'};
@@ -593,103 +562,115 @@ body {
 
   line-height: 1;
 
+  margin-bottom: 2px;
+
 }
 
 
 .tagline {
 
+  text-align: center;
+
   font-size:
     ${paper === 58 ? '7px' : '8px'};
 
-  margin-top: 1px;
+  line-height: 1;
+
+  margin-bottom: 4px;
 
 }
 
 
 .address {
 
+  text-align: center;
+
   font-size:
     ${paper === 58 ? '7px' : '8px'};
 
-  line-height: 1.05;
-
-  margin-top: 2px;
+  line-height: 1.2;
 
 }
 
 
-/* =======================================================
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.line {
+
+  width: 100%;
+
+  border-top:
+    1px dashed #000;
+
+  margin:
+    3px 0;
+
+}
+
+
+/* =========================================================
    BILL TITLE
-======================================================= */
+   ========================================================= */
 
 .bill-title {
 
   text-align: center;
 
   font-size:
-    ${paper === 58 ? '10px' : '12px'};
+    ${paper === 58 ? '12px' : '14px'};
 
   font-weight: 800;
 
-  margin: 2px 0;
+  margin:
+    3px 0 3px 0;
 
 }
 
 
-/* =======================================================
-   DIVIDER
-======================================================= */
+/* =========================================================
+   BILL DETAILS
+   ========================================================= */
 
-.divider {
-
-  border-top:
-    1px dashed #000;
-
-  margin: 2px 0;
-
-}
-
-
-/* =======================================================
-   DETAILS
-======================================================= */
-
-.detail-row {
+.detail {
 
   display: flex;
 
   width: 100%;
 
-  min-height: 11px;
+  min-height: 13px;
 
-  margin: 0;
+  line-height: 1.1;
 
 }
 
 
-.label {
+.detail span {
 
-  width: 37%;
+  width: 38%;
 
   text-align: left;
 
 }
 
 
-.value {
+.detail strong {
 
-  width: 63%;
+  width: 62%;
 
   text-align: right;
+
+  font-weight: 500;
 
   overflow-wrap: anywhere;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    ITEMS HEADER
-======================================================= */
+   ========================================================= */
 
 .items-header {
 
@@ -699,58 +680,57 @@ body {
 
   font-weight: 800;
 
-  min-height: 12px;
+  line-height: 1.1;
 
 }
 
 
-.items-header .item-name {
+.items-header .name {
 
-  flex: 1;
+  width: 55%;
 
 }
 
 
-.items-header .item-qty {
+.items-header .qty {
 
-  width: 12%;
+  width: 15%;
 
   text-align: center;
 
 }
 
 
-.items-header .item-amount {
+.items-header .amount {
 
-  width: 28%;
+  width: 30%;
 
   text-align: right;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    ITEMS
-======================================================= */
+   ========================================================= */
 
-.item-row {
+.item {
 
   display: flex;
 
   width: 100%;
 
-  min-height: 12px;
+  line-height: 1.15;
 
-  align-items: flex-start;
+  margin:
+    1px 0;
 
 }
 
 
 .item-name {
 
-  flex: 1;
-
-  min-width: 0;
+  width: 55%;
 
   text-align: left;
 
@@ -763,36 +743,41 @@ body {
 
 .item-qty {
 
-  width: 12%;
+  width: 15%;
 
   text-align: center;
 
 }
 
 
-.item-amount {
+.item-price {
 
-  width: 28%;
+  width: 30%;
 
   text-align: right;
+
+  white-space: nowrap;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    TOTALS
-======================================================= */
+   ========================================================= */
 
-.total-row {
+.total {
 
   display: flex;
 
   width: 100%;
 
-  min-height: 12px;
-
   justify-content:
     space-between;
+
+  line-height: 1.15;
+
+  margin:
+    2px 0;
 
 }
 
@@ -800,45 +785,50 @@ body {
 .grand-total {
 
   font-size:
-    ${paper === 58 ? '10px' : '11px'};
+    ${paper === 58 ? '11px' : '13px'};
 
   font-weight: 800;
+
+  margin:
+    3px 0;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    AMOUNT WORDS
-======================================================= */
+   ========================================================= */
 
 .amount-words {
 
   text-align: center;
 
   font-size:
-    ${paper === 58 ? '6px' : '7px'};
+    ${paper === 58 ? '6.5px' : '7.5px'};
 
-  line-height: 1.05;
+  line-height: 1.15;
 
-  margin: 1px 0;
+  margin:
+    2px 0;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    FOOTER
-======================================================= */
+   ========================================================= */
 
 .thanks {
 
   text-align: center;
 
   font-size:
-    ${paper === 58 ? '8px' : '9px'};
+    ${paper === 58 ? '9px' : '10px'};
 
   font-weight: 800;
 
-  margin: 2px 0;
+  margin:
+    3px 0 2px 0;
 
 }
 
@@ -848,42 +838,53 @@ body {
   text-align: center;
 
   font-size:
-    ${paper === 58 ? '6px' : '7px'};
+    ${paper === 58 ? '7px' : '8px'};
 
-  line-height: 1.05;
+  line-height: 1.25;
 
 }
 
 
-/* =======================================================
+/* =========================================================
    PRINT
-======================================================= */
+   ========================================================= */
 
 @media print {
 
   html,
   body {
 
-    width: ${paper}mm !important;
+    width: ${paper}mm;
 
-    margin: 0 !important;
+    margin: 0;
 
-    padding: 0 !important;
+    padding: 0;
 
   }
 
 
   #receipt {
 
-    width: ${paper}mm !important;
+    width: ${paper}mm;
 
-    margin: 0 !important;
+    margin: 0;
 
     padding:
-      1mm
-      2mm
-      0
-      2mm !important;
+      1.5mm
+      2.5mm
+      1.5mm
+      2.5mm;
+
+  }
+
+
+  * {
+
+    page-break-before: auto;
+
+    page-break-after: auto;
+
+    page-break-inside: avoid;
 
   }
 
@@ -900,296 +901,235 @@ body {
 <div id="receipt">
 
 
-<!-- =====================================================
-     SHOP HEADER
-===================================================== -->
-
-<div class="header">
-
+  <!-- SHOP -->
 
   <div class="shop-name">
-
-    ${escapeReceiptHTML(
-      shop.name
-    )}
-
+    ${escapeReceiptHTML(shop.name)}
   </div>
 
 
   <div class="tagline">
-
-    ${escapeReceiptHTML(
-      shop.tagline
-    )}
-
+    ${escapeReceiptHTML(shop.tagline)}
   </div>
 
 
-  <div class="divider"></div>
+  <div class="line"></div>
 
 
   <div class="address">
 
     ${shop.addressLines
-      .map(
-        line =>
-          escapeReceiptHTML(line)
+      .map(line =>
+        escapeReceiptHTML(line)
       )
       .join('<br>')}
 
     <br>
 
-    Ph: +91 ${escapeReceiptHTML(
-      shop.phone
-    )}
+    Ph: +91
+    ${escapeReceiptHTML(shop.phone)}
 
   </div>
 
 
-  <div class="divider"></div>
+  <div class="line"></div>
 
+
+  <!-- BILL -->
 
   <div class="bill-title">
-
     BILL
+  </div>
+
+
+  <!-- DETAILS -->
+
+  <div class="detail">
+
+    <span>Bill No</span>
+
+    <strong>
+      #${escapeReceiptHTML(
+        receiptBillCode(order)
+      )}
+    </strong>
 
   </div>
 
 
-</div>
+  <div class="detail">
+
+    <span>Date</span>
+
+    <strong>
+      ${receiptDate(order.time)}
+    </strong>
+
+  </div>
 
 
-<!-- =====================================================
-     BILL DETAILS
-===================================================== -->
+  <div class="detail">
+
+    <span>Time</span>
+
+    <strong>
+      ${receiptTime(order.time)}
+    </strong>
+
+  </div>
 
 
-<div class="detail-row">
+  <div class="detail">
 
-  <span class="label">
-    Bill No
-  </span>
+    <span>Table/Token</span>
 
-  <span class="value">
+    <strong>
+      ${escapeReceiptHTML(
+        order.note || '-'
+      )}
+    </strong>
 
-    #${escapeReceiptHTML(
-      receiptBillCode(order)
-    )}
-
-  </span>
-
-</div>
+  </div>
 
 
-<div class="detail-row">
+  <div class="detail">
 
-  <span class="label">
-    Date
-  </span>
+    <span>Cashier</span>
 
-  <span class="value">
+    <strong>
+      ${escapeReceiptHTML(
+        order.servedBy || '-'
+      )}
+    </strong>
 
-    ${receiptDate(order.time)}
-
-  </span>
-
-</div>
+  </div>
 
 
-<div class="detail-row">
+  <div class="detail">
 
-  <span class="label">
-    Time
-  </span>
+    <span>Payment</span>
 
-  <span class="value">
+    <strong>
+      ${escapeReceiptHTML(payment)}
+    </strong>
 
-    ${receiptTime(order.time)}
-
-  </span>
-
-</div>
+  </div>
 
 
-<div class="detail-row">
+  ${customerHTML}
 
-  <span class="label">
-    Table/Token
-  </span>
 
-  <span class="value">
+  <!-- ITEMS -->
 
+  <div class="line"></div>
+
+
+  <div class="items-header">
+
+    <div class="name">
+      Item
+    </div>
+
+    <div class="qty">
+      Qty
+    </div>
+
+    <div class="amount">
+      Amount
+    </div>
+
+  </div>
+
+
+  <div class="line"></div>
+
+
+  ${itemsHTML}
+
+
+  <!-- TOTAL -->
+
+  <div class="line"></div>
+
+
+  <div class="total">
+
+    <span>
+      Subtotal
+    </span>
+
+    <strong>
+      ${receiptMoney(total)}
+    </strong>
+
+  </div>
+
+
+  <div class="line"></div>
+
+
+  <div class="total grand-total">
+
+    <span>
+      GRAND TOTAL
+    </span>
+
+    <strong>
+      ${receiptMoney(total)}
+    </strong>
+
+  </div>
+
+
+  <div class="line"></div>
+
+
+  <div class="amount-words">
+
+    (
     ${escapeReceiptHTML(
-      order.note || '-'
+      receiptAmountInWords(total)
     )}
-
-  </span>
-
-</div>
-
-
-<div class="detail-row">
-
-  <span class="label">
-    Cashier
-  </span>
-
-  <span class="value">
-
-    ${escapeReceiptHTML(
-      order.servedBy || '-'
-    )}
-
-  </span>
-
-</div>
-
-
-<div class="detail-row">
-
-  <span class="label">
-    Payment
-  </span>
-
-  <span class="value">
-
-    ${escapeReceiptHTML(
-      payment
-    )}
-
-  </span>
-
-</div>
-
-
-<!-- CUSTOMER -->
-
-${customerHTML}
-
-
-<!-- =====================================================
-     ITEMS
-===================================================== -->
-
-
-<div class="divider"></div>
-
-
-<div class="items-header">
-
-  <div class="item-name">
-
-    ITEM
-
-  </div>
-
-
-  <div class="item-qty">
-
-    QTY
-
-  </div>
-
-
-  <div class="item-amount">
-
-    AMOUNT
-
-  </div>
-
-</div>
-
-
-<div class="divider"></div>
-
-
-${itemsHTML}
-
-
-<!-- =====================================================
-     TOTAL
-===================================================== -->
-
-
-<div class="divider"></div>
-
-
-<div class="total-row">
-
-  <span>
-    Subtotal
-  </span>
-
-  <strong>
-    ${receiptMoney(total)}
-  </strong>
-
-</div>
-
-
-<div class="divider"></div>
-
-
-<div class="total-row grand-total">
-
-  <span>
-    GRAND TOTAL
-  </span>
-
-  <span>
-    ${receiptMoney(total)}
-  </span>
-
-</div>
-
-
-<div class="divider"></div>
-
-
-<div class="amount-words">
-
-  (${escapeReceiptHTML(
-    receiptAmountInWords(total)
-  )})
-
-</div>
-
-
-<div class="divider"></div>
-
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-
-<div class="thanks">
-
-  Thank You! Visit Again!
-
-</div>
-
-
-<div class="footer">
-
-  <strong>
-    OPENING HOURS:
-  </strong>
-
-  <br>
-
-  ${shop.hoursLines
-    .map(
-      hour =>
-        escapeReceiptHTML(hour)
     )
-    .join('<br>')}
 
-  <br>
+  </div>
 
-  DINE IN | TAKE AWAY | HOME DELIVERY
 
-</div>
+  <div class="line"></div>
+
+
+  <!-- FOOTER -->
+
+  <div class="thanks">
+
+    Thank You! Visit Again!
+
+  </div>
+
+
+  <div class="footer">
+
+    <strong>
+      OPENING HOURS:
+    </strong>
+
+    <br>
+
+    ${shop.hoursLines
+      .map(hour =>
+        escapeReceiptHTML(hour)
+      )
+      .join('<br>')}
+
+    <br>
+
+    DINE IN | TAKE AWAY
+
+    <br>
+
+    HOME DELIVERY
+
+  </div>
 
 
 </div>
@@ -1205,13 +1145,17 @@ window.onload = function () {
 
     window.print();
 
-    setTimeout(function () {
+  }, 400);
 
-      window.close();
+};
 
-    }, 1000);
+window.onafterprint = function () {
 
-  }, 300);
+  setTimeout(function () {
+
+    window.close();
+
+  }, 500);
 
 };
 
@@ -1222,7 +1166,7 @@ window.onload = function () {
 
 </html>
 
-`);
+  `);
 
 
   printWindow.document.close();
@@ -1230,8 +1174,8 @@ window.onload = function () {
 
 
 /* =========================================================
-   PAPER WIDTH SELECTOR
-========================================================= */
+   PAPER SELECTOR
+   ========================================================= */
 
 function setupReceiptPaperSelector(
   selectElement
@@ -1248,7 +1192,7 @@ function setupReceiptPaperSelector(
 
   selectElement.addEventListener(
     'change',
-    () => {
+    function () {
 
       setReceiptPaperWidth(
         selectElement.value
@@ -1261,7 +1205,7 @@ function setupReceiptPaperSelector(
 
 /* =========================================================
    GLOBAL FUNCTIONS
-========================================================= */
+   ========================================================= */
 
 window.printReceipt =
   printReceipt;
