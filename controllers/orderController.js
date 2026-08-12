@@ -66,7 +66,7 @@ function getOrders(req, res) {
   res.json({ orders });
 }
 
-function createOrder(req, res) {
+async function createOrder(req, res) {
   const {
     menuKey,
     items,
@@ -95,16 +95,33 @@ function createOrder(req, res) {
   let resolvedItems;
 
   try {
-    const db = readDb();
+    // IMPORTANT:
+    // Always read the latest menu from Supabase.
+    const menus = await getMenus();
+
+    if (!menus || !menus[menuKey]) {
+      return res.status(400).json({
+        error: 'Menu not available'
+      });
+    }
+
+    // Use the current Supabase menu to resolve
+    // item names and prices.
+    const db = {
+      menus
+    };
 
     resolvedItems = resolveCartItems(
       db,
       menuKey,
       items
     );
+
   } catch (e) {
+    console.error('createOrder menu error:', e);
+
     return res.status(400).json({
-      error: e.message
+      error: e.message || 'Could not load current menu'
     });
   }
 
@@ -129,7 +146,6 @@ function createOrder(req, res) {
     }
   });
 }
-
 async function updateMenu(req, res) {
   try {
     const menus = req.body.menus;
