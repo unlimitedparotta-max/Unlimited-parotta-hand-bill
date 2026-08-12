@@ -18,9 +18,6 @@ function validateMenus(menus) {
   return menus;
 }
 
-/*
- * Get menus from Supabase.
- */
 async function getMenus() {
   const { data, error } = await supabase
     .from('app_state')
@@ -29,7 +26,9 @@ async function getMenus() {
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Could not read menu from Supabase: ${error.message}`);
+    throw new Error(
+      `Could not read menu from Supabase: ${error.message}`
+    );
   }
 
   if (data && data.menus) {
@@ -39,9 +38,6 @@ async function getMenus() {
   return null;
 }
 
-/*
- * Save menus permanently in Supabase.
- */
 async function saveMenus(menus) {
   menus = validateMenus(menus);
 
@@ -61,7 +57,9 @@ async function saveMenus(menus) {
     .single();
 
   if (error) {
-    throw new Error(`Could not save menu to Supabase: ${error.message}`);
+    throw new Error(
+      `Could not save menu to Supabase: ${error.message}`
+    );
   }
 
   return data.menus;
