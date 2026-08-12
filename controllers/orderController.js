@@ -130,16 +130,34 @@ function createOrder(req, res) {
   });
 }
 
-function updateMenu(req, res) {
-  const db = readDb();
+async function updateMenu(req, res) {
+  try {
+    const menus = req.body.menus;
 
-  db.menus = req.body.menus;
+    if (!menus || typeof menus !== 'object') {
+      return res.status(400).json({ error: 'Invalid menu data' });
+    }
 
-  writeDb(db);
+    // Save permanently to Supabase
+    await saveMenus(menus);
 
-  res.json({
-    ok: true
-  });
+    // Keep local DB synchronized as a fallback
+    const db = readDb();
+    db.menus = menus;
+    await writeDb(db);
+
+    res.json({
+      ok: true,
+      menus
+    });
+
+  } catch (e) {
+    console.error('updateMenu error:', e);
+
+    res.status(500).json({
+      error: e.message || 'Could not save menu'
+    });
+  }
 }
 
 function updateUserPins(req, res) {
