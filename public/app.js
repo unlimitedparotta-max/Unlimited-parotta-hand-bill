@@ -177,10 +177,16 @@ async function api(path, opts = {}) {
   if (!(opts.body instanceof FormData) && opts.body) headers['Content-Type'] = 'application/json';
   const res = await fetch(path, { ...opts, headers });
   if (res.status === 401) {
-    doLocalLogout();
-    render();
-    throw new Error('Session expired — please log in again.');
-  }
+  console.error('AUTH 401:', {
+    path,
+    tokenExists: !!TOKEN,
+    role: ROLE
+  });
+
+  doLocalLogout();
+  render();
+  throw new Error('Session expired — please log in again.');
+}
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
