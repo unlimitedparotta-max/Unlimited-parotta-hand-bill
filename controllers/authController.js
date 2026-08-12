@@ -17,9 +17,16 @@ function login(req, res) {
     return res.status(429).json({ error: `Too many attempts. Try again in ${waitMin} min.` });
   }
 
-  const { role, pin } = req.body || {};
-  const db = readDb();
-  const user = db.users[role];
+ const { role, pin } = req.body || {};
+const db = readDb();
+
+console.log('LOGIN DEBUG:', {
+  role,
+  hasPin: !!pin,
+  dbUsers: Object.keys(db.users || {})
+});
+
+const user = db.users[role];
   const ok = user && verifyPin(pin, user.pin);
 
   if (!ok) {
