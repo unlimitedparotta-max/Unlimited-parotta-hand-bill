@@ -20,14 +20,17 @@ function login(req, res) {
  const { role, pin } = req.body || {};
 const db = readDb();
 
+const user = db.users[role];
+
 console.log('LOGIN DEBUG:', {
   role,
   hasPin: !!pin,
-  dbUsers: Object.keys(db.users || {})
+  dbUsers: Object.keys(db.users || {}),
+  userFound: !!user,
+  verifyResult: user ? verifyPin(pin, user.pin) : false
 });
 
-const user = db.users[role];
-  const ok = user && verifyPin(pin, user.pin);
+const ok = user && verifyPin(pin, user.pin);
 
   if (!ok) {
     const cur = loginAttempts.get(ip) || { count: 0, lockedAt: 0 };
