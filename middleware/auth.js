@@ -28,18 +28,14 @@ let cachedSecret = null;
 
 function getSecret() {
   if (cachedSecret) return cachedSecret;
-  if (process.env.TOKEN_SECRET) { cachedSecret = process.env.TOKEN_SECRET; return cachedSecret; }
-  // Lazy require to avoid a circular require with orderService at module-load time.
-  const { readDb, writeDb } = require('../services/orderService');
-  const db = readDb();
-  if (!db.secret) {
-    db.secret = crypto.randomBytes(32).toString('hex');
-    writeDb(db);
+
+  if (!process.env.TOKEN_SECRET) {
+    throw new Error('TOKEN_SECRET is not configured');
   }
-  cachedSecret = db.secret;
+
+  cachedSecret = process.env.TOKEN_SECRET;
   return cachedSecret;
 }
-
 function createToken(role) {
   const payload = { role, exp: Date.now() + SESSION_MS };
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
