@@ -1,0 +1,27 @@
+UNLIMITED PAROTTA — BAR ORDER STATUS FIX
+
+This package fixes the 1st-floor Rhythm Bar -> ground-floor workflow.
+
+Workflow:
+NEW -> ACCEPTED -> PREPARING -> READY -> COMPLETED
+
+Replace these files in your project:
+
+1. public/app.js
+2. routes/orderRoutes.js
+3. services/orderService.js
+
+server.js is included as the current server.js for reference; it does not need a functional change because it already mounts routes/orderRoutes.js.
+
+Then restart the Node server:
+
+npm start
+
+(or use your existing command, such as: node server.js / pm2 restart <your-app>)
+
+Important:
+- Do NOT delete data/db.json.
+- Existing old bar orders without a status are treated by the frontend as NEW.
+- New bar orders are saved with status NEW automatically.
+- Staff/Admin can ACCEPT -> START PREPARING -> MARK READY.
+- Rhythm Bar can MARK COLLECTED only after READY.

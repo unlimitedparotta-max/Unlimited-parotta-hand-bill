@@ -1,0 +1,1197 @@
+{
+  "users": {
+    "admin": {
+      "label": "Admin",
+      "pin": "scrypt$1d4e63b9383b0d80f6449b4b42e185ab$4fe44b6815632b1896c6fd0482af9cb4aea7fe5285d1f1dbb94f0510687ac77b"
+    },
+    "staff": {
+      "label": "Unlimited Staff",
+      "pin": "scrypt$75d283000a9ac0838709cbc083267abd$8b52cecfdd1fa8fa19053d505133c54b8981385cb97c10efa5e499bc6c0f996d"
+    },
+    "bar": {
+      "label": "Rhythm Bar",
+      "pin": "scrypt$7da00b12effe928181ee0ee5008e5c2f$3d7faed99f266291ddb5fc79706fe440d99e6389cc152168b340c16d89789f29"
+    }
+  },
+  "menus": {
+    "unlimited": [
+      {
+        "cat": "Parotta",
+        "items": [
+          {
+            "id": "p1",
+            "name": "Unlimited Parotta",
+            "price": 99,
+            "image": null
+          },
+          {
+            "id": "p2",
+            "name": "Nool Parotta",
+            "price": 30,
+            "image": null
+          },
+          {
+            "id": "p3",
+            "name": "Bun Parotta",
+            "price": 30,
+            "image": null
+          },
+          {
+            "id": "p4",
+            "name": "Poricha Parotta",
+            "price": 30,
+            "image": null
+          },
+          {
+            "id": "p5",
+            "name": "Coin Parotta (4pc)",
+            "price": 50,
+            "image": null
+          },
+          {
+            "id": "p6",
+            "name": "Plain Parotta",
+            "price": 20,
+            "image": null
+          }
+        ]
+      },
+      {
+        "cat": "Kuruma (Free)",
+        "items": [
+          {
+            "id": "k1",
+            "name": "Veg Kuruma",
+            "price": 0,
+            "image": null
+          },
+          {
+            "id": "k2",
+            "name": "Chicken Kuruma",
+            "price": 0,
+            "image": null
+          },
+          {
+            "id": "k3",
+            "name": "Mutton Kuruma",
+            "price": 0,
+            "image": null
+          }
+        ]
+      },
+      {
+        "cat": "Egg & Sides",
+        "items": [
+          {
+            "id": "e1",
+            "name": "Omelette",
+            "price": 30,
+            "image": null
+          },
+          {
+            "id": "e2",
+            "name": "Kuruma Kalakki",
+            "price": 25,
+            "image": null
+          },
+          {
+            "id": "e3",
+            "name": "Normal Kalakki",
+            "price": 20,
+            "image": null
+          },
+          {
+            "id": "e4",
+            "name": "Full Boil",
+            "price": 20,
+            "image": null
+          },
+          {
+            "id": "e5",
+            "name": "Half Boil",
+            "price": 20,
+            "image": null
+          }
+        ]
+      }
+    ],
+    "bar": [
+      {
+        "cat": "Sea Food Starters",
+        "items": [
+          {
+            "id": "b1",
+            "name": "Fish 65",
+            "price": 119,
+            "image": null
+          },
+          {
+            "id": "b2",
+            "name": "Fish Finger",
+            "price": 129,
+            "image": null
+          },
+          {
+            "id": "b3",
+            "name": "Prawn Golden Fry",
+            "price": 139,
+            "image": null
+          },
+          {
+            "id": "b4",
+            "name": "Crispy Prawn",
+            "price": 140,
+            "image": null
+          },
+          {
+            "id": "b5",
+            "name": "Prawn Salt & Pepper",
+            "price": 149,
+            "image": null
+          },
+          {
+            "id": "b6",
+            "name": "Crab Lollipop",
+            "price": 149,
+            "image": null
+          },
+          {
+            "id": "b7",
+            "name": "Squid Fry",
+            "price": 139,
+            "image": null
+          },
+          {
+            "id": "b8",
+            "name": "Squid Varuval",
+            "price": 149,
+            "image": null
+          }
+        ]
+      },
+      {
+        "cat": "Chicken Starters",
+        "items": [
+          {
+            "id": "b9",
+            "name": "Crispy Fried Chicken",
+            "price": 109,
+            "image": null
+          },
+          {
+            "id": "b10",
+            "name": "Chilli Chicken",
+            "price": 99,
+            "image": null
+          },
+          {
+            "id": "b11",
+            "name": "Garlic Chicken",
+            "price": 119,
+            "image": null
+          },
+          {
+            "id": "b12",
+            "name": "Ginger Chicken",
+            "price": 129,
+            "image": null
+          },
+          {
+            "id": "b13",
+            "name": "Honey Chicken",
+            "price": 129,
+            "image": null
+          },
+          {
+            "id": "b14",
+            "name": "Chicken Lollipop",
+            "price": 109,
+            "image": null
+          },
+          {
+            "id": "b15",
+            "name": "Chicken 65",
+            "price": 99,
+            "image": null
+          },
+          {
+            "id": "b16",
+            "name": "Saute Chicken",
+            "price": 109,
+            "image": null
+          },
+          {
+            "id": "b17",
+            "name": "Chicken Nuggets",
+            "price": 99,
+            "image": null
+          },
+          {
+            "id": "b18",
+            "name": "Kaadai Fry",
+            "price": 129,
+            "image": null
+          },
+          {
+            "id": "b19",
+            "name": "Pepper Kaadai",
+            "price": 139,
+            "image": null
+          }
+        ]
+      },
+      {
+        "cat": "Egg Starters",
+        "items": [
+          {
+            "id": "b20",
+            "name": "Omelette",
+            "price": 59,
+            "image": null
+          },
+          {
+            "id": "b21",
+            "name": "Full Boil",
+            "price": 49,
+            "image": null
+          },
+          {
+            "id": "b22",
+            "name": "Kalakki",
+            "price": 59,
+            "image": null
+          },
+          {
+            "id": "b23",
+            "name": "Gurumaa Kalakki",
+            "price": 79,
+            "image": null
+          },
+          {
+            "id": "b24",
+            "name": "Chicken Kalakki",
+            "price": 99,
+            "image": null
+          },
+          {
+            "id": "b25",
+            "name": "Chilli Egg",
+            "price": 129,
+            "image": null
+          },
+          {
+            "id": "b26",
+            "name": "Karandi Omlette",
+            "price": 60,
+            "image": null
+          }
+        ]
+      },
+      {
+        "cat": "Veg Starters",
+        "items": [
+          {
+            "id": "b27",
+            "name": "Babycorn Salt & Pepper",
+            "price": 89,
+            "image": null
+          },
+          {
+            "id": "b28",
+            "name": "Chilli Babycorn",
+            "price": 89,
+            "image": null
+          },
+          {
+            "id": "b29",
+            "name": "65 Mushroom",
+            "price": 79,
+            "image": null
+          },
+          {
+            "id": "b30",
+            "name": "Salt & Pepper Mushroom",
+            "price": 89,
+            "image": null
+          },
+          {
+            "id": "b31",
+            "name": "Gobi 65",
+            "price": 69,
+            "image": null
+          },
+          {
+            "id": "b32",
+            "name": "Gobi Manchurian",
+            "price": 79,
+            "image": null
+          },
+          {
+            "id": "b33",
+            "name": "Masala Pappad",
+            "price": 49,
+            "image": null
+          },
+          {
+            "id": "b34",
+            "name": "Peanut Pappad",
+            "price": 69,
+            "image": null
+          },
+          {
+            "id": "b35",
+            "name": "Crispy Corn",
+            "price": 79,
+            "image": null
+          },
+          {
+            "id": "b36",
+            "name": "French Fries",
+            "price": 59,
+            "image": null
+          }
+        ]
+      }
+    ]
+  },
+  "orders": [
+    {
+      "billNo": 1,
+      "billCode": "UP2608044DF3AB",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p4",
+          "name": "Poricha Parotta",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 189,
+      "time": "2026-08-04T05:30:24.613Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "failed",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T05:30:24.623Z"
+      }
+    },
+    {
+      "billNo": 2,
+      "billCode": "UP260804CEFCA8",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 2
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 3
+        }
+      ],
+      "total": 318,
+      "time": "2026-08-04T05:46:50.362Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "failed",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T05:46:51.354Z"
+      }
+    },
+    {
+      "billNo": 3,
+      "billCode": "UP260804EA22BB",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "k1",
+          "name": "Veg Kuruma",
+          "price": 0,
+          "qty": 1
+        },
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p5",
+          "name": "Coin Parotta (4pc)",
+          "price": 50,
+          "qty": 1
+        }
+      ],
+      "total": 209,
+      "time": "2026-08-04T05:53:41.928Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "failed",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T05:53:43.197Z"
+      }
+    },
+    {
+      "billNo": 4,
+      "billCode": "UP2608040020FC",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "sanjevee",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 159,
+      "time": "2026-08-04T05:55:37.424Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "failed",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T05:55:38.336Z"
+      }
+    },
+    {
+      "billNo": 5,
+      "billCode": "UP2608041151C0",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p4",
+          "name": "Poricha Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p5",
+          "name": "Coin Parotta (4pc)",
+          "price": 50,
+          "qty": 1
+        }
+      ],
+      "total": 239,
+      "time": "2026-08-04T05:59:47.808Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "failed",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T05:59:48.788Z"
+      }
+    },
+    {
+      "billNo": 6,
+      "billCode": "UP26080426A634",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p4",
+          "name": "Poricha Parotta",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 189,
+      "time": "2026-08-04T06:02:17.333Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T06:02:18.949Z"
+      }
+    },
+    {
+      "billNo": 7,
+      "billCode": "UP2608041E2869",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 2
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 2
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 288,
+      "time": "2026-08-04T06:06:56.707Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T06:06:58.141Z"
+      }
+    },
+    {
+      "billNo": 8,
+      "billCode": "UP2608046DBC72",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 4
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 2
+        }
+      ],
+      "total": 456,
+      "time": "2026-08-04T06:13:17.040Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T06:13:18.447Z"
+      }
+    },
+    {
+      "billNo": 9,
+      "billCode": "UP2608049F2B9E",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "p5",
+          "name": "Coin Parotta (4pc)",
+          "price": 50,
+          "qty": 1
+        },
+        {
+          "id": "p4",
+          "name": "Poricha Parotta",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 239,
+      "time": "2026-08-04T06:19:58.045Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T06:19:59.510Z"
+      }
+    },
+    {
+      "billNo": 10,
+      "billCode": "UP2608046F1BED",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 4
+        }
+      ],
+      "total": 396,
+      "time": "2026-08-04T06:35:32.543Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "failed",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T06:35:33.084Z"
+      }
+    },
+    {
+      "billNo": 11,
+      "billCode": "UP26080487218C",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "07871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 1
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 4
+        },
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 4
+        }
+      ],
+      "total": 339,
+      "time": "2026-08-04T07:11:43.837Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T07:11:45.393Z"
+      }
+    },
+    {
+      "billNo": 12,
+      "billCode": "UP260804727DF8",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "7871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 14
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 2
+        }
+      ],
+      "total": 1446,
+      "time": "2026-08-04T07:41:47.139Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T07:41:48.620Z"
+      }
+    },
+    {
+      "billNo": 13,
+      "billCode": "UP260804343F4B",
+      "menuKey": "unlimited",
+      "note": "t1",
+      "customerName": "Kavin",
+      "customerMobile": "7871390735",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 2
+        },
+        {
+          "id": "p2",
+          "name": "Nool Parotta",
+          "price": 30,
+          "qty": 3
+        }
+      ],
+      "total": 288,
+      "time": "2026-08-04T07:45:54.224Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "sent",
+        "sms": "not_sent",
+        "lastUpdated": "2026-08-04T07:45:55.510Z"
+      }
+    },
+    {
+      "billNo": 14,
+      "billCode": "UP260811D28806",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b1",
+          "name": "Fish 65",
+          "price": 119,
+          "qty": 4
+        }
+      ],
+      "total": 476,
+      "time": "2026-08-10T18:33:09.632Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      },
+      "status": "ready",
+      "statusUpdatedAt": "2026-08-10T19:02:19.562Z",
+      "statusUpdatedBy": "Unlimited Staff"
+    },
+    {
+      "billNo": 15,
+      "billCode": "UP2608114061D9",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b1",
+          "name": "Fish 65",
+          "price": 119,
+          "qty": 1
+        },
+        {
+          "id": "b2",
+          "name": "Fish Finger",
+          "price": 129,
+          "qty": 1
+        },
+        {
+          "id": "b3",
+          "name": "Prawn Golden Fry",
+          "price": 139,
+          "qty": 1
+        },
+        {
+          "id": "b4",
+          "name": "Crispy Prawn",
+          "price": 140,
+          "qty": 1
+        }
+      ],
+      "total": 527,
+      "time": "2026-08-10T18:46:35.906Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      },
+      "status": "ready",
+      "statusUpdatedAt": "2026-08-10T19:02:18.610Z",
+      "statusUpdatedBy": "Unlimited Staff"
+    },
+    {
+      "billNo": 16,
+      "billCode": "UP260811F071B9",
+      "menuKey": "unlimited",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 4
+        }
+      ],
+      "total": 396,
+      "time": "2026-08-10T19:02:34.163Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 17,
+      "billCode": "UP260811E7345E",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b3",
+          "name": "Prawn Golden Fry",
+          "price": 139,
+          "qty": 4
+        }
+      ],
+      "total": 556,
+      "time": "2026-08-10T19:05:03.897Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 18,
+      "billCode": "UP260811A293C3",
+      "menuKey": "unlimited",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "p3",
+          "name": "Bun Parotta",
+          "price": 30,
+          "qty": 4
+        }
+      ],
+      "total": 120,
+      "time": "2026-08-10T19:05:14.499Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 19,
+      "billCode": "UP260811AA51C5",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b5",
+          "name": "Prawn Salt & Pepper",
+          "price": 149,
+          "qty": 5
+        }
+      ],
+      "total": 745,
+      "time": "2026-08-10T19:15:06.181Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 20,
+      "billCode": "UP260811702D61",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b1",
+          "name": "Fish 65",
+          "price": 119,
+          "qty": 11
+        }
+      ],
+      "total": 1309,
+      "time": "2026-08-10T19:19:38.659Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 21,
+      "billCode": "UP2608110855BB",
+      "menuKey": "unlimited",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "p1",
+          "name": "Unlimited Parotta",
+          "price": 99,
+          "qty": 2
+        }
+      ],
+      "total": 198,
+      "time": "2026-08-10T19:21:28.723Z",
+      "servedBy": "Unlimited Staff",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 22,
+      "billCode": "UP2608118BF886",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b1",
+          "name": "Fish 65",
+          "price": 119,
+          "qty": 4
+        }
+      ],
+      "total": 476,
+      "time": "2026-08-10T19:21:48.245Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 23,
+      "billCode": "UP260811AFF485",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b2",
+          "name": "Fish Finger",
+          "price": 129,
+          "qty": 8
+        }
+      ],
+      "total": 1032,
+      "time": "2026-08-11T14:53:33.968Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 24,
+      "billCode": "UP26081181170D",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b1",
+          "name": "Fish 65",
+          "price": 119,
+          "qty": 4
+        }
+      ],
+      "total": 476,
+      "time": "2026-08-11T17:59:56.862Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    },
+    {
+      "billNo": 25,
+      "billCode": "UP2608111FE9A7",
+      "menuKey": "bar",
+      "note": "",
+      "customerName": "",
+      "customerMobile": "",
+      "items": [
+        {
+          "id": "b2",
+          "name": "Fish Finger",
+          "price": 129,
+          "qty": 13
+        }
+      ],
+      "total": 1677,
+      "time": "2026-08-11T18:00:10.876Z",
+      "servedBy": "Rhythm Bar",
+      "paymentMethod": "cash",
+      "paymentId": null,
+      "delivery": {
+        "whatsapp": "not_sent",
+        "sms": "not_sent"
+      }
+    }
+  ],
+  "billCounter": 26,
+  "secret": "3f5bdb0f04566a6dc1c70961c0ccd311372fc394c86abeb59c094f57f7bd15e3"
+}

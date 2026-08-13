@@ -1,0 +1,175 @@
+@media print {
+
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    html,
+    body {
+        width: 80mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #receipt-print,
+    #receipt-print * {
+        visibility: visible !important;
+    }
+
+    #receipt-print {
+        display: block !important;
+
+        position: absolute !important;
+        top: 0 !important;
+        left: 50% !important;
+
+        transform: translateX(-50%) !important;
+
+        width: 72mm !important;
+
+        margin: 0 !important;
+        padding: 2mm 0 !important;
+
+        box-sizing: border-box !important;
+
+        background: white !important;
+        color: black !important;
+    }
+
+    .receipt-mono {
+        width: 72mm !important;
+
+        margin: 0 auto !important;
+        padding: 0 !important;
+
+        font-family: Arial, Helvetica, sans-serif !important;
+
+        font-size: 11px !important;
+        line-height: 1.25 !important;
+
+        color: #000 !important;
+        background: #fff !important;
+    }
+
+    .r-shop {
+        text-align: center !important;
+        font-size: 17px !important;
+        font-weight: 900 !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+    }
+
+    .r-tagline {
+        text-align: center !important;
+        font-size: 9px !important;
+        margin: 1px 0 3px !important;
+    }
+
+    .r-addr {
+        text-align: center !important;
+        font-size: 9px !important;
+        line-height: 1.25 !important;
+        margin: 0 !important;
+    }
+
+    .r-title {
+        text-align: center !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        margin: 4px 0 3px !important;
+    }
+
+    .r-div {
+        border-top: 1px dashed #000 !important;
+        height: 0 !important;
+        margin: 3px 0 !important;
+    }
+
+    .r-row {
+        display: flex !important;
+        width: 100% !important;
+
+        justify-content: space-between !important;
+        align-items: baseline !important;
+
+        font-size: 10.5px !important;
+        line-height: 1.35 !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .r-label {
+        width: 40% !important;
+        text-align: left !important;
+    }
+
+    .r-value {
+        width: 60% !important;
+        text-align: right !important;
+        white-space: nowrap !important;
+    }
+
+    .r-item {
+        display: flex !important;
+        width: 100% !important;
+        gap: 3px !important;
+
+        font-size: 10.5px !important;
+        line-height: 1.3 !important;
+    }
+
+    .r-iname {
+        flex: 1 !important;
+        text-align: left !important;
+    }
+
+    .r-iqty {
+        width: 12% !important;
+        text-align: center !important;
+    }
+
+    .r-iamt {
+        width: 27% !important;
+        text-align: right !important;
+    }
+
+    .r-total {
+        font-size: 13px !important;
+        font-weight: 900 !important;
+    }
+
+    .r-words {
+        text-align: center !important;
+        font-size: 8px !important;
+        margin: 2px 0 !important;
+    }
+
+    .r-thanks {
+        text-align: center !important;
+        font-size: 11px !important;
+        font-weight: 900 !important;
+        margin: 3px 0 1px !important;
+    }
+
+    .r-small {
+        text-align: center !important;
+        font-size: 8px !important;
+        line-height: 1.25 !important;
+        margin: 0 !important;
+    }
+
+    /* Prevent unnecessary page breaks */
+    .receipt-mono,
+    .r-row,
+    .r-item {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}
