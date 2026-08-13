@@ -1,3 +1,4 @@
+const supabase = require('../supabase');
 const multer = require('multer');
 const path = require('path');
 
@@ -29,12 +30,23 @@ async function getState(req, res) {
       await saveMenus(menus);
     }
 
-    res.json({
-      role: req.role,
-      menus,
-      billCounter: db.billCounter,
-      users: req.role === 'admin' ? db.users : undefined
-    });
+  const { data: currentCounter, error: counterError } =
+  await supabase
+    .from('app_counters')
+    .select('bill_counter')
+    .eq('id', 'main')
+    .single();
+
+if (counterError) {
+  throw new Error(`Could not load bill counter: ${counterError.message}`);
+}
+
+res.json({
+  role: req.role,
+  menus,
+  billCounter: currentCounter.bill_counter,
+  users: req.role === 'admin' ? db.users : undefined
+});
   } catch (e) {
     console.error('getState error:', e);
 
