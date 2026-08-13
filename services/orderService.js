@@ -1,4 +1,5 @@
 const fs = require('fs');
+const supabase = require('../supabase');
 const { DATA_DIR, DB_PATH, UPLOAD_DIR } = require('../utils/constants');
 const { hashPin } = require('../middleware/auth');
 const { generateBillCode } = require('../utils/billCode');
@@ -123,9 +124,30 @@ function resolveCartItems(db, menuKey, items) {
 
 /* Saves a new order: assigns billNo + a secure billCode, computes the
    total, and persists it. */
-function saveOrder({ menuKey, resolvedItems, note, cleanName, cleanMobile, role, paymentMethod, paymentId }) {
+async function saveOrder({
+  menuKey,
+  resolvedItems,
+  note,
+  cleanName,
+  cleanMobile,
+  role,
+  paymentMethod,
+  paymentId
+}) {
   const db = readDb();
-  const billNo = db.billCounter++;
+
+const { data: billNo, error: counterError } =
+  await supabase.rpc('get_next_bill_no');
+
+if (counterError) {
+  throw new Error(
+    `Could not generate bill number: ${counterError.message}`
+  );
+}
+
+if (billNo === null || billNo === undefined) {
+  throw new Error('Could not generate bill number');
+}
   const now = new Date();
   let billCode = generateBillCode(now);
   // Practically impossible, but cheap to guard against a random-suffix collision.
@@ -146,8 +168,8 @@ function saveOrder({ menuKey, resolvedItems, note, cleanName, cleanMobile, role,
     delivery: { whatsapp: 'not_sent', sms: 'not_sent' } // filled in as delivery attempts happen (see notificationService)
   };
   db.orders.push(order);
-  writeDb(db);
-  return order;
+await writeDb(db);
+return order;
 }
 
 /* billCode is the normal lookup path; billNo fallback covers orders saved

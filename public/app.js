@@ -1313,8 +1313,26 @@ function renderMenuMgmtTab() {
       ${STATE.menus[mk].map((cat, ci) => `
         <div style="margin-bottom:14px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
-            <span>${cat.cat}</span>
-            <button class="tiny-btn danger" data-del-cat="${mk}|${ci}">Remove category</button>
+            <div style="display:flex;gap:5px;align-items:center;">
+  <span>${cat.cat}</span>
+
+  <button
+    class="tiny-btn"
+    data-move-cat-up="${mk}|${ci}"
+    ${ci === 0 ? 'disabled' : ''}
+  >↑</button>
+
+  <button
+    class="tiny-btn"
+    data-move-cat-down="${mk}|${ci}"
+    ${ci === STATE.menus[mk].length - 1 ? 'disabled' : ''}
+  >↓</button>
+
+  <button
+    class="tiny-btn danger"
+    data-del-cat="${mk}|${ci}"
+  >Remove category</button>
+</div>
           </div>
           ${cat.items.map((it, ii) => `
             <div class="mgmt-row">
@@ -1477,6 +1495,67 @@ function bindAdminTabEvents() {
       }
     });
   });
+
+// ================= CATEGORY MOVE UP =================
+document.querySelectorAll('[data-move-cat-up]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const [mk, ciRaw] = btn.dataset.moveCatUp.split('|');
+    const ci = Number(ciRaw);
+
+    const categories = STATE.menus[mk];
+
+    // Already at the top
+    if (ci <= 0) return;
+
+    // Swap with previous category
+    [categories[ci - 1], categories[ci]] =
+      [categories[ci], categories[ci - 1]];
+
+    try {
+      await api('/api/menu', {
+        method: 'PUT',
+        body: JSON.stringify({
+          menus: STATE.menus
+        })
+      });
+
+      renderAdminContent();
+    } catch (e) {
+      showToast('Could not move category: ' + e.message);
+    }
+  });
+});
+
+
+// ================= CATEGORY MOVE DOWN =================
+document.querySelectorAll('[data-move-cat-down]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const [mk, ciRaw] = btn.dataset.moveCatDown.split('|');
+    const ci = Number(ciRaw);
+
+    const categories = STATE.menus[mk];
+
+    // Already at the bottom
+    if (ci >= categories.length - 1) return;
+
+    // Swap with next category
+    [categories[ci], categories[ci + 1]] =
+      [categories[ci + 1], categories[ci]];
+
+    try {
+      await api('/api/menu', {
+        method: 'PUT',
+        body: JSON.stringify({
+          menus: STATE.menus
+        })
+      });
+
+      renderAdminContent();
+    } catch (e) {
+      showToast('Could not move category: ' + e.message);
+    }
+  });
+});
 
   document.querySelectorAll('[data-add-item]').forEach(btn => {
     btn.addEventListener('click', async () => {

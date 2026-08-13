@@ -125,7 +125,7 @@ async function createOrder(req, res) {
     });
   }
 
-  const order = saveOrder({
+  const order = await saveOrder({
     menuKey,
     resolvedItems,
     note,
