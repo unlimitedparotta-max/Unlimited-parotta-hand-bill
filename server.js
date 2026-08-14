@@ -13,7 +13,7 @@ const smsRoutes = require('./routes/smsRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const reportRoutes = require('./routes/reportRoutes');
-
+const dayClosingRoutes = require('./routes/dayClosingRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
