@@ -1076,18 +1076,20 @@ function renderAdminShell() {
         <button class="pill-btn logout" id="logout-btn">Log out</button>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab-btn ${ADMIN_TAB === 'billing' ? 'active' : ''}" data-tab="billing">New Bill</button>
-      <button class="tab-btn ${ADMIN_TAB === 'reports' ? 'active' : ''}" data-tab="reports">Reports</button>
-      <button class="tab-btn ${ADMIN_TAB === 'menu' ? 'active' : ''}" data-tab="menu">Menu Management</button>
-      <button class="tab-btn ${ADMIN_TAB === 'staff' ? 'active' : ''}" data-tab="staff">Staff Access</button>
-    </div>
+   <div class="tabs">
+  <button class="tab-btn ${ADMIN_TAB === 'billing' ? 'active' : ''}" data-tab="billing">New Bill</button>
+  <button class="tab-btn ${ADMIN_TAB === 'closing' ? 'active' : ''}" data-tab="closing">💰 Day Closing</button>
+  <button class="tab-btn ${ADMIN_TAB === 'reports' ? 'active' : ''}" data-tab="reports">📊 Reports</button>
+  <button class="tab-btn ${ADMIN_TAB === 'menu' ? 'active' : ''}" data-tab="menu">📦 Menu Management</button>
+  <button class="tab-btn ${ADMIN_TAB === 'staff' ? 'active' : ''}" data-tab="staff">🔐 Staff Access</button>
+</div>
     <div class="content">${renderAdminTab()}</div>
   </div>`;
 }
 
 function renderAdminTab() {
   if (ADMIN_TAB === 'billing') return renderAdminBillingTab();
+  if (ADMIN_TAB === 'closing') return `<div id="day-closing-root">Loading…</div>`;
   if (ADMIN_TAB === 'reports') return `<div id="reports-root">Loading…</div>`;
   if (ADMIN_TAB === 'menu') return renderMenuMgmtTab();
   if (ADMIN_TAB === 'staff') return renderStaffAccessTab();
@@ -1107,6 +1109,271 @@ function renderAdminBillingTab() {
     </div>
     ${renderBillingArea(ADMIN_BILL_COUNTER)}
   `;
+}
+
+/* ================= DAY-END CLOSING ================= */
+
+async function renderDayClosingTab() {
+  const root = document.getElementById('day-closing-root');
+
+  if (!root) return;
+
+  root.innerHTML = `
+    <div class="reports-head"
+      style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+
+      <div>
+        <h3 style="margin:0;">💰 Day-End Closing</h3>
+        <div style="color:var(--muted);font-size:13px;margin-top:4px;">
+          Close today's business and reconcile cash.
+        </div>
+      </div>
+
+      <div style="font-weight:700;">
+        ${todayStr()}
+      </div>
+
+    </div>
+
+    <div id="closing-loading"
+      style="padding:30px;text-align:center;color:var(--muted);">
+      Loading today's sales...
+    </div>
+  `;
+
+  try {
+    const data = await api('/api/day-closing/summary');
+
+    const summary = data.summary || data;
+
+    const totalOrders = Number(summary.total_orders || 0);
+    const cashSales = Number(summary.cash_sales || 0);
+    const upiSales = Number(summary.upi_sales || 0);
+    const swiggySales = Number(summary.swiggy_sales || 0);
+    const zomatoSales = Number(summary.zomato_sales || 0);
+
+    const totalSales = Number(
+      summary.total_sales ||
+      cashSales +
+      upiSales +
+      swiggySales +
+      zomatoSales
+    );
+
+    const expectedCash = Number(
+      summary.expected_cash || cashSales
+    );
+
+    const existingClosing = summary.closing || null;
+
+    root.innerHTML = `
+      <div class="grid-cards">
+
+        <div class="stat-card">
+          <div class="lbl">Today's Orders</div>
+          <div class="val">${totalOrders}</div>
+        </div>
+
+        <div class="stat-card gold">
+          <div class="lbl">Today's Sales</div>
+          <div class="val">${rupee(totalSales)}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="lbl">💵 Cash Sales</div>
+          <div class="val">${rupee(cashSales)}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="lbl">📲 UPI / GPay</div>
+          <div class="val">${rupee(upiSales)}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="lbl">🛵 Swiggy</div>
+          <div class="val">${rupee(swiggySales)}</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="lbl">🛵 Zomato</div>
+          <div class="val">${rupee(zomatoSales)}</div>
+        </div>
+
+      </div>
+
+      <div class="mgmt-block" style="margin-top:20px;">
+
+        <h3>Cash Reconciliation</h3>
+
+        <div class="grid-cards">
+
+          <div class="stat-card">
+            <div class="lbl">Expected Cash</div>
+            <div class="val">${rupee(expectedCash)}</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="lbl">Actual Cash</div>
+            <div class="val" id="actual-cash-display">
+              ₹0.00
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="lbl">Difference</div>
+            <div class="val" id="cash-difference">
+              ₹0.00
+            </div>
+          </div>
+
+        </div>
+
+        ${
+          existingClosing
+            ? `
+              <div style="
+                margin-top:18px;
+                padding:15px;
+                border-radius:10px;
+                background:rgba(34,197,94,.10);
+                border:1px solid rgba(34,197,94,.25);
+              ">
+
+                <strong>✅ Business day already closed</strong>
+
+                <div style="margin-top:8px;font-size:13px;">
+                  Closed by:
+                  ${escapeHtml(existingClosing.closed_by || 'Admin')}
+                </div>
+
+                <div style="font-size:13px;">
+                  Closed at:
+                  ${
+                    existingClosing.closed_at
+                      ? niceDateTime(existingClosing.closed_at)
+                      : '—'
+                  }
+                </div>
+
+                <div style="font-size:13px;">
+                  Actual Cash:
+                  ${rupee(Number(existingClosing.actual_cash || 0))}
+                </div>
+
+                <div style="font-size:13px;">
+                  Difference:
+                  ${rupee(Number(existingClosing.difference || 0))}
+                </div>
+
+              </div>
+            `
+            : `
+              <div class="filters" style="margin-top:18px;">
+
+                <div class="field">
+
+                  <label>Actual Cash in Drawer</label>
+
+                  <input
+                    type="number"
+                    id="actual-cash-input"
+                    min="0"
+                    step="0.01"
+                    placeholder="Enter cash counted"
+                  >
+
+                </div>
+
+              </div>
+
+              <div class="field" style="margin-top:10px;">
+
+                <label>Notes</label>
+
+                <textarea
+                  id="closing-notes"
+                  rows="4"
+                  placeholder="Optional closing notes..."
+                  style="width:100%;resize:vertical;"
+                ></textarea>
+
+              </div>
+
+              <div style="
+                margin-top:16px;
+                display:flex;
+                gap:10px;
+                align-items:center;
+              ">
+
+                <button
+                  class="tiny-btn"
+                  id="calculate-difference-btn">
+                  Calculate Difference
+                </button>
+
+                <button
+                  class="tiny-btn"
+                  id="close-business-day-btn">
+                  🔒 Close Business Day
+                </button>
+
+                <span
+                  id="closing-message"
+                  style="font-size:13px;">
+                </span>
+
+              </div>
+            `
+        }
+
+      </div>
+
+      <div class="mgmt-block" style="margin-top:20px;">
+
+        <h3>📋 Closing History</h3>
+
+        <div id="closing-history">
+          Loading history...
+        </div>
+
+      </div>
+    `;
+
+    bindDayClosingEvents(expectedCash);
+    loadDayClosingHistory();
+
+  } catch (e) {
+
+    root.innerHTML = `
+      <div class="mgmt-block">
+
+        <h3>💰 Day-End Closing</h3>
+
+        <p style="color:#ef4444;">
+          Could not load day closing:
+          ${escapeHtml(e.message)}
+        </p>
+
+        <button
+          class="tiny-btn"
+          id="retry-closing-btn">
+          Retry
+        </button>
+
+      </div>
+    `;
+
+    const retry =
+      document.getElementById('retry-closing-btn');
+
+    if (retry) {
+      retry.addEventListener(
+        'click',
+        renderDayClosingTab
+      );
+    }
+  }
 }
 
 let REPORT_FROM = todayStr();
@@ -1393,10 +1660,11 @@ function attachAdminEvents() {
 
 function renderAdminContent() {
   document.querySelector('.tabs').innerHTML = `
-      <button class="tab-btn ${ADMIN_TAB === 'billing' ? 'active' : ''}" data-tab="billing">New Bill</button>
-      <button class="tab-btn ${ADMIN_TAB === 'reports' ? 'active' : ''}" data-tab="reports">Reports</button>
-      <button class="tab-btn ${ADMIN_TAB === 'menu' ? 'active' : ''}" data-tab="menu">Menu Management</button>
-      <button class="tab-btn ${ADMIN_TAB === 'staff' ? 'active' : ''}" data-tab="staff">Staff Access</button>`;
+    <button class="tab-btn ${ADMIN_TAB === 'billing' ? 'active' : ''}" data-tab="billing">New Bill</button>
+    <button class="tab-btn ${ADMIN_TAB === 'closing' ? 'active' : ''}" data-tab="closing">💰 Day Closing</button>
+    <button class="tab-btn ${ADMIN_TAB === 'reports' ? 'active' : ''}" data-tab="reports">📊 Reports</button>
+    <button class="tab-btn ${ADMIN_TAB === 'menu' ? 'active' : ''}" data-tab="menu">📦 Menu Management</button>
+    <button class="tab-btn ${ADMIN_TAB === 'staff' ? 'active' : ''}" data-tab="staff">🔐 Staff Access</button>`;
   document.querySelector('.content').innerHTML = renderAdminTab();
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => { ADMIN_TAB = btn.dataset.tab; CART = []; renderAdminContent(); });
@@ -1405,6 +1673,12 @@ function renderAdminContent() {
 }
 
 function bindAdminTabEvents() {
+
+  // ================= DAY CLOSING =================
+  if (ADMIN_TAB === 'closing') {
+    renderDayClosingTab();
+  }
+
   if (ADMIN_TAB === 'billing') {
     const sel = document.getElementById('admin-counter-select');
     if (sel) sel.addEventListener('change', () => { ADMIN_BILL_COUNTER = sel.value; CART = []; renderAdminContent(); });
