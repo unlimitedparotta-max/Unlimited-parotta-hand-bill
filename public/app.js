@@ -1146,25 +1146,51 @@ async function renderDayClosingTab() {
 
     const summary = data.summary || data;
 
-    const totalOrders = Number(summary.total_orders || 0);
-    const cashSales = Number(summary.cash_sales || 0);
-    const upiSales = Number(summary.upi_sales || 0);
-    const swiggySales = Number(summary.swiggy_sales || 0);
-    const zomatoSales = Number(summary.zomato_sales || 0);
+    const totalOrders = Number(
+  summary.total_orders ?? summary.totalOrders ?? 0
+);
 
-    const totalSales = Number(
-      summary.total_sales ||
-      cashSales +
-      upiSales +
-      swiggySales +
-      zomatoSales
-    );
+const cashSales = Number(
+  summary.cash_sales ?? summary.cashSales ?? 0
+);
 
-    const expectedCash = Number(
-      summary.expected_cash || cashSales
-    );
+const upiSales = Number(
+  summary.upi_sales ?? summary.upiSales ?? 0
+);
 
-    const existingClosing = summary.closing || null;
+const swiggySales = Number(
+  summary.swiggy_sales ?? summary.swiggySales ?? 0
+);
+
+const zomatoSales = Number(
+  summary.zomato_sales ?? summary.zomatoSales ?? 0
+);
+
+const totalSales = Number(
+  summary.total_sales ??
+  summary.totalSales ??
+  (
+    cashSales +
+    upiSales +
+    swiggySales +
+    zomatoSales
+  )
+);
+
+const expectedCash = Number(
+  summary.expected_cash ??
+  summary.expectedCash ??
+  cashSales
+);
+
+let existingClosing = null;
+
+try {
+  const closingData = await api('/api/day-closing');
+  existingClosing = closingData.closing || null;
+} catch (e) {
+  console.warn('Could not load existing day closing:', e.message);
+}
 
     root.innerHTML = `
       <div class="grid-cards">
@@ -1376,6 +1402,448 @@ async function renderDayClosingTab() {
   }
 }
 
+
+/* ================= DAY CLOSING EVENTS ================= */
+
+function bindDayClosingEvents(expectedCash) {
+
+  const actualInput =
+
+    document.getElementById('actual-cash-input');
+
+  const differenceDisplay =
+
+    document.getElementById('cash-difference');
+
+  const actualDisplay =
+
+    document.getElementById('actual-cash-display');
+
+  const calculateBtn =
+
+    document.getElementById('calculate-difference-btn');
+
+  const closeBtn =
+
+    document.getElementById('close-business-day-btn');
+
+  const message =
+
+    document.getElementById('closing-message');
+
+  function calculateDifference() {
+
+    if (!actualInput) return;
+
+    const actualCash =
+
+      Number(actualInput.value || 0);
+
+    const difference =
+
+      actualCash - Number(expectedCash || 0);
+
+    if (actualDisplay) {
+
+      actualDisplay.textContent =
+
+        rupee(actualCash);
+
+    }
+
+    if (differenceDisplay) {
+
+      differenceDisplay.textContent =
+
+        rupee(difference);
+
+      differenceDisplay.style.color =
+
+        difference === 0
+
+          ? 'var(--free)'
+
+          : difference > 0
+
+            ? '#16a34a'
+
+            : '#dc2626';
+
+    }
+
+    return {
+
+      actualCash,
+
+      difference
+
+    };
+
+  }
+
+  if (actualInput) {
+
+    actualInput.addEventListener(
+
+      'input',
+
+      calculateDifference
+
+    );
+
+  }
+
+  if (calculateBtn) {
+
+    calculateBtn.addEventListener(
+
+      'click',
+
+      () => {
+
+        calculateDifference();
+
+        if (message) {
+
+          message.textContent =
+
+            'Difference calculated.';
+
+          message.style.color =
+
+            'var(--muted)';
+
+        }
+
+      }
+
+    );
+
+  }
+
+  if (closeBtn) {
+
+    closeBtn.addEventListener(
+
+      'click',
+
+      async () => {
+
+        if (!actualInput) return;
+
+        const actualCash =
+
+          Number(actualInput.value);
+
+        const notes =
+
+          document
+
+            .getElementById('closing-notes')
+
+            ?.value
+
+            .trim() || '';
+
+        if (
+
+          !Number.isFinite(actualCash) ||
+
+          actualCash < 0
+
+        ) {
+
+          if (message) {
+
+            message.textContent =
+
+              'Please enter a valid actual cash amount.';
+
+            message.style.color =
+
+              '#dc2626';
+
+          }
+
+          return;
+
+        }
+
+        const difference =
+
+          actualCash -
+
+          Number(expectedCash || 0);
+
+        const confirmed = confirm(
+
+          `Close business day?\n\n` +
+
+          `Expected Cash: ${rupee(expectedCash)}\n` +
+
+          `Actual Cash: ${rupee(actualCash)}\n` +
+
+          `Difference: ${rupee(difference)}`
+
+        );
+
+        if (!confirmed) return;
+
+        closeBtn.disabled = true;
+
+        closeBtn.textContent =
+
+          'Closing…';
+
+        try {
+
+          await api(
+
+            '/api/day-closing/close',
+
+            {
+
+              method: 'POST',
+
+              body: JSON.stringify({
+
+                date: todayStr(),
+
+                actualCash,
+
+                notes
+
+              })
+
+            }
+
+          );
+
+          showToast(
+
+            '✅ Business day closed successfully.'
+
+          );
+
+          await renderDayClosingTab();
+
+        } catch (e) {
+
+          showToast(
+
+            'Could not close business day: ' +
+
+            e.message
+
+          );
+
+          closeBtn.disabled = false;
+
+          closeBtn.textContent =
+
+            '🔒 Close Business Day';
+
+        }
+
+      }
+
+    );
+
+  }
+
+}
+
+/* ================= DAY CLOSING HISTORY ================= */
+
+async function loadDayClosingHistory() {
+
+  const root =
+
+    document.getElementById(
+
+      'closing-history'
+
+    );
+
+  if (!root) return;
+
+  try {
+
+    const data =
+
+      await api(
+
+        '/api/day-closing/history'
+
+      );
+
+    const closings =
+
+      data.closings || [];
+
+    if (!closings.length) {
+
+      root.innerHTML = `
+
+        <div style="
+
+          padding:20px;
+
+          text-align:center;
+
+          color:var(--muted);
+
+        ">
+
+          No closing history yet.
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+    root.innerHTML = `
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Date</th>
+
+              <th>Orders</th>
+
+              <th>Total Sales</th>
+
+              <th>Expected Cash</th>
+
+              <th>Actual Cash</th>
+
+              <th>Difference</th>
+
+              <th>Closed By</th>
+
+              <th>Closed At</th>
+
+              <th>Status</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${closings.map(c => {
+
+              const difference =
+
+                Number(c.difference || 0);
+
+              return `
+
+                <tr>
+
+                  <td>${escapeHtml(c.business_date || '—')}</td>
+
+                  <td>${Number(c.total_orders || 0)}</td>
+
+                  <td>${rupee(Number(c.total_sales || 0))}</td>
+
+                  <td>${rupee(Number(c.expected_cash || 0))}</td>
+
+                  <td>${rupee(Number(c.actual_cash || 0))}</td>
+
+                  <td style="
+
+                    font-weight:700;
+
+                    color:${
+
+                      difference === 0
+
+                        ? 'var(--free)'
+
+                        : difference > 0
+
+                          ? '#16a34a'
+
+                          : '#dc2626'
+
+                    };
+
+                  ">
+
+                    ${rupee(difference)}
+
+                  </td>
+
+                  <td>${escapeHtml(c.closed_by || '—')}</td>
+
+                  <td>
+
+                    ${
+
+                      c.closed_at
+
+                        ? niceDateTime(c.closed_at)
+
+                        : '—'
+
+                    }
+
+                  </td>
+
+                  <td>
+
+                    ${
+
+                      c.status === 'closed'
+
+                        ? '✅ Closed'
+
+                        : escapeHtml(c.status || '—')
+
+                    }
+
+                  </td>
+
+                </tr>
+
+              `;
+
+            }).join('')}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    `;
+
+  } catch (e) {
+
+    root.innerHTML = `
+
+      <div style="color:#ef4444;">
+
+        Could not load closing history:
+
+        ${escapeHtml(e.message)}
+
+      </div>
+
+    `;
+
+  }
+
+}
 let REPORT_FROM = todayStr();
 let REPORT_TO = todayStr();
 let ALL_ORDERS_CACHE = [];
