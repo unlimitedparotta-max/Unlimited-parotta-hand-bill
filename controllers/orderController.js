@@ -56,20 +56,82 @@ res.json({
   }
 }
 
-function getOrders(req, res) {
-  const db = readDb();
+async function getOrders(req, res) {
+  try {
+    let query = supabase
+      .from('orders')
+      .select('*')
+      .order('time', { ascending: false });
 
-  let orders = db.orders;
+    if (req.query.menuKey) {
+      query = query.eq('menu_key', req.query.menuKey);
+    }
 
-  if (req.query.menuKey) {
-    orders = orders.filter(o => o.menuKey === req.query.menuKey);
+    if (req.query.afterBillNo) {
+      query = query.gt(
+        'bill_no',
+        Number(req.query.afterBillNo)
+      );
+    }
+
+    if (req.query.limit) {
+      query = query.limit(
+        Math.min(Number(req.query.limit), 500)
+      );
+    } else {
+      query = query.limit(500);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Supabase orders fetch error:', error);
+
+      return res.status(500).json({
+        error: `Could not load orders: ${error.message}`
+      });
+    }
+
+    const orders = (data || []).map(order => ({
+      id: order.id,
+
+      billNo: order.bill_no,
+      billCode: order.bill_code,
+
+      menuKey: order.menu_key,
+
+      note: order.note || '',
+
+      customerName: order.customer_name || '',
+      customerMobile: order.customer_mobile || '',
+
+      items: order.items || [],
+
+      total: Number(order.total || 0),
+
+      time: order.time,
+
+      servedBy: order.served_by || '',
+
+      paymentMethod: order.payment_method || 'cash',
+      paymentId: order.payment_id || null,
+
+      delivery: order.delivery || {
+        whatsapp: 'not_sent',
+        sms: 'not_sent'
+      }
+    }));
+
+    return res.json({ orders });
+
+  } catch (error) {
+    console.error('Get orders error:', error);
+
+    return res.status(500).json({
+      error: error.message || 'Could not load orders'
+    });
   }
-
-  if (req.query.afterBillNo) {
-    orders = orders.filter(
-      o => o.billNo > Number(req.query.afterBillNo)
-    );
-  }
+}
 
   if (req.query.limit) {
     orders = orders.slice(-Number(req.query.limit));
