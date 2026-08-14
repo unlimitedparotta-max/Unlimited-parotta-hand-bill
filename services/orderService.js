@@ -136,41 +136,82 @@ async function saveOrder({
 }) {
   const db = readDb();
 
-const { data: billNo, error: counterError } =
-  await supabase.rpc('get_next_bill_no');
+  // Get the next bill number permanently from Supabase
+  const { data: billNo, error: counterError } =
+    await supabase.rpc('get_next_bill_no');
 
-if (counterError) {
-  throw new Error(
-    `Could not generate bill number: ${counterError.message}`
-  );
-}
+  if (counterError) {
+    throw new Error(
+      `Could not generate bill number: ${counterError.message}`
+    );
+  }
 
-if (billNo === null || billNo === undefined) {
-  throw new Error('Could not generate bill number');
-}
+  if (billNo === null || billNo === undefined) {
+    throw new Error('Could not generate bill number');
+  }
+
   const now = new Date();
-  let billCode = generateBillCode(now);
-  // Practically impossible, but cheap to guard against a random-suffix collision.
-  while (db.orders.some(o => o.billCode === billCode)) billCode = generateBillCode(now);
-  const order = {
-    billNo,
-    billCode,
-    menuKey,
-    note: String(note || '').slice(0, 300),
-    customerName: cleanName,
-    customerMobile: cleanMobile,
-    items: resolvedItems,
-    total: resolvedItems.reduce((s, i) => s + i.price * i.qty, 0),
-    time: now.toISOString(),
-    servedBy: db.users[role] ? db.users[role].label : role,
-    paymentMethod: paymentMethod || 'cash',
-    paymentId: paymentId || null,
-    delivery: { whatsapp: 'not_sent', sms: 'not_sent' } // filled in as delivery attempts happen (see notificationService)
+  const billCode = generateBillCode(now);
+
+  const servedBy = db.users[role]
+    ? db.users[role].label
+    : role;
+
+  const total = resolvedItems.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
+
+  // Save the order PERMANENTLY in Supabase
+  const { data: savedOrder, error: orderError } = await supabase
+    .from('orders')
+    .insert({
+      bill_no: billNo,
+      bill_code: billCode,
+      menu_key: menuKey,
+      note: String(note || '').slice(0, 300),
+      customer_name: cleanName || null,
+      customer_mobile: cleanMobile || null,
+      items: resolvedItems,
+      total,
+      time: now.toISOString(),
+      served_by: servedBy,
+      payment_method: paymentMethod || 'cash',
+      payment_id: paymentId || null,
+      delivery: {
+        whatsapp: 'not_sent',
+        sms: 'not_sent'
+      }
+    })
+    .select()
+    .single();
+
+  if (orderError) {
+    console.error('Supabase order insert error:', orderError);
+
+    throw new Error(
+      `Could not save order: ${orderError.message}`
+    );
+  }
+
+  // Return the same format the existing application expects
+  return {
+    billNo: savedOrder.bill_no,
+    billCode: savedOrder.bill_code,
+    menuKey: savedOrder.menu_key,
+    note: savedOrder.note,
+    customerName: savedOrder.customer_name,
+    customerMobile: savedOrder.customer_mobile,
+    items: savedOrder.items,
+    total: Number(savedOrder.total),
+    time: savedOrder.time,
+    servedBy: savedOrder.served_by,
+    paymentMethod: savedOrder.payment_method,
+    paymentId: savedOrder.payment_id,
+    delivery: savedOrder.delivery
   };
-  db.orders.push(order);
-await writeDb(db);
-return order;
 }
+
 
 /* billCode is the normal lookup path; billNo fallback covers orders saved
    before the bill-link feature existed (they won't have a billCode). */
