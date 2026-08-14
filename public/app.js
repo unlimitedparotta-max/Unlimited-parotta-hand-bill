@@ -206,7 +206,16 @@ function beep() {
   } catch (e) {}
 }
 function rupee(n) { return '₹' + Number(n).toFixed(0); }
-function todayStr(d) { const dt = d ? new Date(d) : new Date(); return dt.toISOString().slice(0, 10); }
+function todayStr(d) {
+  const dt = d ? new Date(d) : new Date();
+
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(dt);
+}
 function niceDateTime(iso) { const d = new Date(iso); return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 function counterLabel(key) { return key === 'unlimited' ? 'Unlimited Parotta' : 'Rhythm Bar'; }
 function showToast(msg) {
