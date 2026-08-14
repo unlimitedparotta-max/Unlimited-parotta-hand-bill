@@ -133,12 +133,6 @@ async function getOrders(req, res) {
   }
 }
 
-  if (req.query.limit) {
-    orders = orders.slice(-Number(req.query.limit));
-  }
-
-  res.json({ orders });
-}
 
 async function createOrder(req, res) {
   const {
