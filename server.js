@@ -32,7 +32,7 @@ app.use('/', smsRoutes);
 app.use('/', emailRoutes);
 app.use('/', customerRoutes);
 app.use('/', reportRoutes);
-
+app.use('/', dayClosingRoutes);
 app.get('/health', (req, res) => res.send('ok'));
 
 app.use(errorHandler);
