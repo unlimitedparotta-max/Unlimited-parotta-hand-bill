@@ -6715,11 +6715,11 @@ function openInventoryModal(item = null) {
                 method: 'PUT',
 
                 body: JSON.stringify({
-                  name,
-                  quantity,
-                  unit,
-                  low_stock: lowStock
-                })
+  name,
+  unit,
+  currentStock: quantity,
+  minimumStock: lowStock
+})
               }
             );
 
@@ -6731,12 +6731,12 @@ function openInventoryModal(item = null) {
                 method: 'POST',
 
                 body: JSON.stringify({
-                  name,
-                  quantity,
-                  unit,
-                  low_stock: lowStock
-                })
-              }
+  name,
+  unit,
+  currentStock: quantity,
+  minimumStock: lowStock
+})
+            }
             );
 
           }
@@ -7359,14 +7359,13 @@ function openAddInventoryModal() {
             {
               method: 'POST',
 
-              body:
-                JSON.stringify({
-                  name,
-                  quantity,
-                  unit,
-                  low_stock:
-                    lowStock
-                })
+             body:
+  JSON.stringify({
+    name,
+    unit,
+    currentStock: quantity,
+    minimumStock: lowStock
+  })
             }
           );
 
@@ -7634,13 +7633,12 @@ function openEditInventoryModal(
               method: 'PUT',
 
               body:
-                JSON.stringify({
-                  name,
-                  quantity,
-                  unit,
-                  low_stock:
-                    lowStock
-                })
+  JSON.stringify({
+    name,
+    unit,
+    currentStock: quantity,
+    minimumStock: lowStock
+  })
             }
           );
 
