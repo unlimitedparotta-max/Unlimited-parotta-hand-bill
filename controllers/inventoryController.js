@@ -370,12 +370,183 @@ async function getAllIngredients(req, res) {
   }
 }
 
+/*
+ * GET TODAY'S INVENTORY
+ * Automatically carries yesterday's closing stock forward.
+ */
+async function getDailyInventory(req, res) {
+  try {
+    const date =
+      req.query.date ||
+      new Date().toISOString().slice(0, 10);
 
+    const { data: items, error: itemsError } =
+      await supabase
+        .from('inventory_items')
+        .select('*')
+        .eq('active', true)
+        .order('name', { ascending: true });
+
+    if (itemsError) {
+      throw new Error(itemsError.message);
+    }
+
+    const result = [];
+
+    for (const item of items || []) {
+
+      // Check today's inventory record
+      const { data: todayRecord, error: todayError } =
+        await supabase
+          .from('inventory_daily')
+          .select('*')
+          .eq('ingredient_id', item.id)
+          .eq('business_date', date)
+          .maybeSingle();
+
+      if (todayError) {
+        throw new Error(todayError.message);
+      }
+
+      if (todayRecord) {
+        result.push({
+          ...item,
+
+          daily_id: todayRecord.id,
+
+          opening_stock:
+            Number(todayRecord.opening_stock || 0),
+
+          bought_today:
+            Number(todayRecord.received_stock || 0),
+
+          used_today:
+            Number(todayRecord.used_stock || 0),
+
+          wastage_stock:
+            Number(todayRecord.wastage_stock || 0),
+
+          closing_stock:
+            Number(todayRecord.closing_stock || 0),
+
+          cost:
+            Number(todayRecord.purchase_price || 0),
+
+          low_stock:
+            Number(item.minimum_stock || 0),
+
+          unit:
+            item.unit || ''
+        });
+
+        continue;
+      }
+
+      // Find previous closing stock
+      const { data: previous, error: previousError } =
+        await supabase
+          .from('inventory_daily')
+          .select('closing_stock')
+          .eq('ingredient_id', item.id)
+          .lt('business_date', date)
+          .order('business_date', {
+            ascending: false
+          })
+          .limit(1)
+          .maybeSingle();
+
+      if (previousError) {
+        throw new Error(previousError.message);
+      }
+
+      const openingStock =
+        previous
+          ? Number(previous.closing_stock || 0)
+          : Number(item.current_stock || 0);
+
+      // Create today's daily record
+      const newRecord = {
+        business_date: date,
+
+        ingredient_id: item.id,
+
+        opening_stock: openingStock,
+
+        received_stock: 0,
+
+        used_stock: 0,
+
+        wastage_stock: 0,
+
+        closing_stock: openingStock,
+
+        purchase_price:
+          Number(item.purchase_price || 0)
+      };
+
+      const { data: created, error: createError } =
+        await supabase
+          .from('inventory_daily')
+          .insert(newRecord)
+          .select()
+          .single();
+
+      if (createError) {
+        throw new Error(createError.message);
+      }
+
+      result.push({
+        ...item,
+
+        daily_id: created.id,
+
+        opening_stock: openingStock,
+
+        bought_today: 0,
+
+        used_today: 0,
+
+        wastage_stock: 0,
+
+        closing_stock: openingStock,
+
+        cost:
+          Number(item.purchase_price || 0),
+
+        low_stock:
+          Number(item.minimum_stock || 0),
+
+        unit:
+          item.unit || ''
+      });
+    }
+
+    res.json({
+      ok: true,
+      date,
+      inventory: result
+    });
+
+  } catch (error) {
+
+    console.error(
+      'Get daily inventory error:',
+      error
+    );
+
+    res.status(500).json({
+      error:
+        error.message ||
+        'Could not load daily inventory'
+    });
+  }
+}
 module.exports = {
   getIngredients,
   getAllIngredients,
   addIngredient,
   updateIngredient,
   deleteIngredient,
-  restoreIngredient
+  restoreIngredient,
+  getDailyInventory
 };

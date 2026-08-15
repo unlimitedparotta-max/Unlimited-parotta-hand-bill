@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
   getIngredients,
+  getDailyInventory,
   getAllIngredients,
   addIngredient,
   updateIngredient,
@@ -15,12 +16,19 @@ const { auth } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/admin');
 
 /* GET ACTIVE INVENTORY */
+/* GET ACTIVE INVENTORY */
 router.get(
   '/api/inventory',
   auth,
   getIngredients
 );
 
+/* GET DAILY INVENTORY */
+router.get(
+  '/api/inventory/daily',
+  auth,
+  getDailyInventory
+);
 /* GET ALL INVENTORY */
 router.get(
   '/api/inventory/all',

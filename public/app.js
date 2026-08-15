@@ -6785,22 +6785,36 @@ async function loadInventoryTab() {
 
   root.innerHTML = `
 
-    <div class="mgmt-block">
+    <div class="inventory-loading">
 
-      <p style="color:var(--muted);">
+      <div class="inventory-loading-spinner"></div>
+
+      <span>
         Loading inventory...
-      </p>
+      </span>
 
     </div>
+
   `;
 
 
   try {
 
-    const data =
+    /*
+     * Daily inventory is used for the dashboard.
+     *
+     * The existing Add / Edit / Delete APIs
+     * are NOT changed.
+     */
+
+    const dailyData =
       await api(
-        '/api/inventory'
+        '/api/inventory/daily'
       );
+
+
+    const data =
+      dailyData || {};
 
 
     const items =
@@ -6809,179 +6823,783 @@ async function loadInventoryTab() {
       [];
 
 
+    const totalItems =
+      items.length;
+
+
+    const outOfStock =
+      items.filter(
+        item =>
+          Number(
+            item.closing_stock || 0
+          ) <= 0
+      ).length;
+
+
+    const lowStock =
+      items.filter(
+        item => {
+
+          const closing =
+            Number(
+              item.closing_stock || 0
+            );
+
+          const minimum =
+            Number(
+              item.low_stock ||
+              item.lowStock ||
+              0
+            );
+
+          return (
+            closing > 0 &&
+            closing <= minimum
+          );
+
+        }
+      ).length;
+
+
+    const inStock =
+      items.filter(
+        item => {
+
+          const closing =
+            Number(
+              item.closing_stock || 0
+            );
+
+          const minimum =
+            Number(
+              item.low_stock ||
+              item.lowStock ||
+              0
+            );
+
+          return (
+            closing > minimum
+          );
+
+        }
+      ).length;
+
+
+    const today =
+      data.date ||
+      new Date()
+        .toISOString()
+        .slice(0, 10);
+
+
     root.innerHTML = `
 
-      <div class="mgmt-block">
+      <div class="inventory-page">
 
-        <div
-          style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:15px;
-            gap:10px;
-            flex-wrap:wrap;
-          "
-        >
 
-          <div>
+        <!-- ================= HEADER ================= -->
 
-            <h3
-              style="margin:0;"
-            >
-              📦 Inventory
-            </h3>
+        <div class="inventory-header">
 
-            <p
-              style="
-                color:var(--muted);
-                font-size:13px;
-              "
-            >
-              Manage your stock
-            </p>
+          <div class="inventory-title">
+
+            <div class="inventory-title-icon">
+              📦
+            </div>
+
+            <div>
+
+              <h3>
+                Inventory
+              </h3>
+
+              <p>
+                Manage today's stock and inventory levels
+              </p>
+
+            </div>
 
           </div>
 
 
-          <button
-            class="tiny-btn"
-            id="add-inventory-btn"
-          >
-            + Add Item
-          </button>
+          <div class="inventory-header-actions">
+
+            <div class="inventory-date">
+              📅 ${escapeHtml(today)}
+            </div>
+
+
+            <button
+              type="button"
+              class="inventory-refresh-btn"
+              id="inventory-refresh-btn"
+            >
+              ↻ Refresh
+            </button>
+
+
+            <button
+              type="button"
+              class="inventory-add-btn"
+              id="add-inventory-btn"
+            >
+              + Add Item
+            </button>
+
+          </div>
 
         </div>
 
 
-        ${
-          items.length
-            ? `
+        <!-- ================= SUMMARY ================= -->
 
-              <div class="table-wrap">
-
-                <table>
-
-                  <thead>
-
-                    <tr>
-
-                      <th>
-                        Item
-                      </th>
-
-                      <th>
-                        Quantity
-                      </th>
-
-                      <th>
-                        Unit
-                      </th>
-
-                      <th>
-                        Low Stock
-                      </th>
-
-                      <th>
-                        Actions
-                      </th>
-
-                    </tr>
-
-                  </thead>
+        <div class="inventory-summary-grid">
 
 
-                  <tbody>
+          <div class="inventory-summary-card">
 
-                    ${
-                      items.map(
-                        item => `
+            <div class="inventory-summary-icon">
+              📦
+            </div>
 
-                          <tr>
+            <div>
 
-                            <td>
-                              ${escapeHtml(
+              <div class="inventory-summary-label">
+                Total Items
+              </div>
+
+              <div class="inventory-summary-value">
+                ${totalItems}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="inventory-summary-card inventory-good-card">
+
+            <div class="inventory-summary-icon">
+              🟢
+            </div>
+
+            <div>
+
+              <div class="inventory-summary-label">
+                In Stock
+              </div>
+
+              <div class="inventory-summary-value">
+                ${inStock}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="inventory-summary-card inventory-low-card">
+
+            <div class="inventory-summary-icon">
+              🟠
+            </div>
+
+            <div>
+
+              <div class="inventory-summary-label">
+                Low Stock
+              </div>
+
+              <div class="inventory-summary-value">
+                ${lowStock}
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="inventory-summary-card inventory-out-card">
+
+            <div class="inventory-summary-icon">
+              🔴
+            </div>
+
+            <div>
+
+              <div class="inventory-summary-label">
+                Out of Stock
+              </div>
+
+              <div class="inventory-summary-value">
+                ${outOfStock}
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= SEARCH ================= -->
+
+        <div class="inventory-toolbar">
+
+
+          <div class="inventory-search">
+
+            <span>
+              🔍
+            </span>
+
+            <input
+              type="search"
+              id="inventory-search"
+              placeholder="Search ingredients..."
+              autocomplete="off"
+            >
+
+          </div>
+
+
+          <select
+            id="inventory-status-filter"
+            class="inventory-filter"
+          >
+
+            <option value="all">
+              All Status
+            </option>
+
+            <option value="good">
+              🟢 In Stock
+            </option>
+
+            <option value="low">
+              🟠 Low Stock
+            </option>
+
+            <option value="out">
+              🔴 Out of Stock
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- ================= TABLE ================= -->
+
+        <div class="inventory-table-card">
+
+
+          <div class="inventory-table-header">
+
+            <div>
+
+              <h4>
+                Today's Inventory
+              </h4>
+
+              <p>
+                Opening → Bought → Used → Closing
+              </p>
+
+            </div>
+
+
+            <span class="inventory-count-badge">
+              ${totalItems} items
+            </span>
+
+          </div>
+
+
+          <div class="inventory-table-scroll">
+
+
+            <table
+              class="inventory-dashboard-table"
+            >
+
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    ITEM
+                  </th>
+
+                  <th>
+                    OPENING
+                  </th>
+
+                  <th>
+                    BOUGHT TODAY
+                  </th>
+
+                  <th>
+                    USED TODAY
+                  </th>
+
+                  <th>
+                    CLOSING STOCK
+                  </th>
+
+                  <th>
+                    COST
+                  </th>
+
+                  <th>
+                    LOW STOCK
+                  </th>
+
+                  <th>
+                    UNIT
+                  </th>
+
+                  <th>
+                    STATUS
+                  </th>
+
+                  <th>
+                    ACTIONS
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody
+                id="inventory-table-body"
+              >
+
+                ${
+                  items.length
+
+                    ?
+
+                    items.map(
+                      item => {
+
+                        const opening =
+                          Number(
+                            item.opening_stock ||
+                            0
+                          );
+
+
+                        const bought =
+                          Number(
+                            item.bought_today ||
+                            0
+                          );
+
+
+                        const used =
+                          Number(
+                            item.used_today ||
+                            0
+                          );
+
+
+                        const closing =
+                          Number(
+                            item.closing_stock ||
+                            0
+                          );
+
+
+                        const cost =
+                          Number(
+                            item.cost ||
+                            0
+                          );
+
+
+                        const minimum =
+                          Number(
+                            item.low_stock ||
+                            item.lowStock ||
+                            0
+                          );
+
+
+                        let status =
+                          'good';
+
+                        let statusText =
+                          '🟢 Good';
+
+
+                        if (
+                          closing <= 0
+                        ) {
+
+                          status =
+                            'out';
+
+                          statusText =
+                            '🔴 Out of Stock';
+
+                        } else if (
+                          closing <= minimum
+                        ) {
+
+                          status =
+                            'low';
+
+                          statusText =
+                            '🟠 Low Stock';
+
+                        }
+
+
+                        return `
+
+                          <tr
+                            class="inventory-row"
+                            data-name="${escapeHtml(
+                              String(
                                 item.name ||
                                 ''
-                              )}
+                              ).toLowerCase()
+                            )}"
+                            data-status="${status}"
+                          >
+
+
+                            <td>
+
+                              <div class="inventory-item-cell">
+
+                                <div class="inventory-item-icon">
+                                  📦
+                                </div>
+
+                                <div>
+
+                                  <strong>
+                                    ${escapeHtml(
+                                      item.name ||
+                                      ''
+                                    )}
+                                  </strong>
+
+                                  <small>
+                                    ID #${escapeHtml(
+                                      String(
+                                        item.id ||
+                                        ''
+                                      )
+                                    )}
+                                  </small>
+
+                                </div>
+
+                              </div>
+
                             </td>
 
 
                             <td>
-                              ${Number(
-                                item.quantity ||
-                                0
-                              )}
+                              ${opening}
                             </td>
 
 
                             <td>
+
+                              <span class="inventory-positive">
+                                +${bought}
+                              </span>
+
+                            </td>
+
+
+                            <td>
+
+                              <span class="inventory-negative">
+                                -${used}
+                              </span>
+
+                            </td>
+
+
+                            <td>
+
+                              <div class="inventory-closing">
+
+                                <strong>
+                                  ${closing}
+                                </strong>
+
+                                <span>
+                                  ${escapeHtml(
+                                    item.unit ||
+                                    ''
+                                  )}
+                                </span>
+
+                              </div>
+
+                            </td>
+
+
+                            <td>
+
+                              ₹${cost.toFixed(2)}
+
+                            </td>
+
+
+                            <td>
+                              ${minimum}
+                            </td>
+
+
+                            <td>
+
                               ${escapeHtml(
                                 item.unit ||
                                 ''
                               )}
-                            </td>
 
-
-                            <td>
-                              ${Number(
-                                item.low_stock ??
-                                item.lowStock ??
-                                0
-                              )}
                             </td>
 
 
                             <td>
 
-                              <button
-                                class="tiny-btn"
-                                data-inventory-edit="${item.id}"
+                              <span
+                                class="inventory-status-badge ${status}"
                               >
-                                Edit
-                              </button>
-
-
-                              <button
-                                class="tiny-btn danger"
-                                data-inventory-delete="${item.id}"
-                              >
-                                Delete
-                              </button>
+                                ${statusText}
+                              </span>
 
                             </td>
+
+
+                            <td>
+
+                              <div class="inventory-action-buttons">
+
+
+                                <button
+                                  type="button"
+                                  class="inventory-action-btn edit"
+                                  data-inventory-edit="${escapeHtml(
+                                    String(
+                                      item.id ||
+                                      ''
+                                    )
+                                  )}"
+                                >
+                                  Edit
+                                </button>
+
+
+                                <button
+                                  type="button"
+                                  class="inventory-action-btn delete"
+                                  data-inventory-delete="${escapeHtml(
+                                    String(
+                                      item.id ||
+                                      ''
+                                    )
+                                  )}"
+                                >
+                                  Delete
+                                </button>
+
+
+                              </div>
+
+                            </td>
+
 
                           </tr>
 
-                        `
-                      ).join('')
-                    }
+                        `;
 
-                  </tbody>
+                      }
+                    ).join('')
 
-                </table>
 
-              </div>
+                    :
 
-            `
-            : `
+                    `
 
-              <div
-                style="
-                  padding:30px;
-                  text-align:center;
-                  color:var(--muted);
-                "
-              >
-                No inventory items found.
-              </div>
+                      <tr>
 
-            `
-        }
+                        <td
+                          colspan="10"
+                          class="inventory-empty-cell"
+                        >
+
+                          <div class="inventory-empty-icon">
+                            📦
+                          </div>
+
+                          <strong>
+                            No inventory items
+                          </strong>
+
+                          <span>
+                            Add your first inventory item to get started.
+                          </span>
+
+                        </td>
+
+                      </tr>
+
+                    `
+                }
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= INFO ================= -->
+
+        <div class="inventory-info-card">
+
+          <div class="inventory-info-icon">
+            ℹ️
+          </div>
+
+          <div>
+
+            <strong>
+              Daily stock flow
+            </strong>
+
+            <p>
+              Today's closing stock becomes tomorrow's opening stock automatically.
+            </p>
+
+          </div>
+
+        </div>
+
 
       </div>
+
     `;
 
+
+    /* ================= REFRESH ================= */
+
+    document
+      .getElementById(
+        'inventory-refresh-btn'
+      )
+      ?.addEventListener(
+        'click',
+        loadInventoryTab
+      );
+
+
+    /* ================= SEARCH ================= */
+
+    const searchInput =
+      document.getElementById(
+        'inventory-search'
+      );
+
+
+    const statusFilter =
+      document.getElementById(
+        'inventory-status-filter'
+      );
+
+
+    function filterInventory() {
+
+      const search =
+        String(
+          searchInput?.value ||
+          ''
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const selectedStatus =
+        statusFilter?.value ||
+        'all';
+
+
+      document
+        .querySelectorAll(
+          '.inventory-row'
+        )
+        .forEach(
+          row => {
+
+            const name =
+              row.dataset.name ||
+              '';
+
+
+            const status =
+              row.dataset.status ||
+              'good';
+
+
+            const matchesSearch =
+              !search ||
+              name.includes(
+                search
+              );
+
+
+            const matchesStatus =
+              selectedStatus ===
+                'all' ||
+              selectedStatus ===
+                status;
+
+
+            row.style.display =
+              matchesSearch &&
+              matchesStatus
+                ? ''
+                : 'none';
+
+          }
+        );
+
+    }
+
+
+    searchInput
+      ?.addEventListener(
+        'input',
+        filterInventory
+      );
+
+
+    statusFilter
+      ?.addEventListener(
+        'change',
+        filterInventory
+      );
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Existing Add / Edit / Delete
+     * functionality remains in
+     * bindInventoryEvents().
+     */
 
     bindInventoryEvents(
       items
@@ -6998,14 +7616,17 @@ async function loadInventoryTab() {
 
     root.innerHTML = `
 
-      <div class="mgmt-block">
+      <div class="inventory-error">
+
+        <div class="inventory-error-icon">
+          ⚠️
+        </div>
 
         <h3>
-          📦 Inventory
+          Could not load inventory
         </h3>
 
-        <p style="color:#ef4444;">
-          Could not load inventory:
+        <p>
           ${escapeHtml(
             error.message
           )}
@@ -7013,13 +7634,15 @@ async function loadInventoryTab() {
 
 
         <button
-          class="tiny-btn"
+          type="button"
+          class="inventory-refresh-btn"
           id="retry-inventory-btn"
         >
-          Retry
+          ↻ Try Again
         </button>
 
       </div>
+
     `;
 
 
@@ -7031,7 +7654,9 @@ async function loadInventoryTab() {
         'click',
         loadInventoryTab
       );
+
   }
+
 }
 
 
