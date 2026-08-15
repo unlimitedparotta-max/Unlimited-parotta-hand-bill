@@ -1,24 +1,33 @@
 const supabase = require('../supabase');
 
 /*
- * Get today's date in local restaurant time.
+ * Get the current business date in India.
+ *
+ * IMPORTANT:
+ * The restaurant operates in India, so we must NOT depend
+ * on the server/Vercel timezone.
+ *
+ * Business date changes at midnight IST.
  */
 function getBusinessDate() {
-  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
 
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
+  return formatter.format(new Date());
 }
 
+
 /*
- * Calculate today's sales directly from Supabase orders.
+ * Get today's orders using the restaurant business date.
  */
 async function getTodaySummary(req, res) {
   try {
-    const businessDate = req.query.date || getBusinessDate();
+    const businessDate =
+      req.query.date || getBusinessDate();
 
     const start = `${businessDate}T00:00:00`;
     const end = `${businessDate}T23:59:59.999`;
@@ -43,8 +52,10 @@ async function getTodaySummary(req, res) {
 
     for (const order of list) {
       const total = Number(order.total || 0);
-      const method = String(order.payment_method || 'cash')
-        .toLowerCase();
+
+      const method = String(
+        order.payment_method || 'cash'
+      ).toLowerCase();
 
       if (method === 'cash') {
         cashSales += total;
@@ -96,7 +107,7 @@ async function getTodaySummary(req, res) {
 
 
 /*
- * Get an existing closing for a particular date.
+ * Get closing for a particular business date.
  */
 async function getClosing(req, res) {
   try {
@@ -115,6 +126,7 @@ async function getClosing(req, res) {
 
     res.json({
       ok: true,
+      businessDate,
       closing: data || null
     });
 
@@ -134,7 +146,18 @@ async function getClosing(req, res) {
 
 
 /*
- * Close the business day.
+ * Close a business day.
+ *
+ * IMPORTANT:
+ * This DOES NOT delete orders.
+ *
+ * It creates a permanent record in:
+ *
+ *     day_closings
+ *
+ * The orders remain permanently in:
+ *
+ *     orders
  */
 async function closeDay(req, res) {
   try {
@@ -149,25 +172,29 @@ async function closeDay(req, res) {
         .trim()
         .slice(0, 1000);
 
-    if (!Number.isFinite(actualCash) || actualCash < 0) {
+    if (
+      !Number.isFinite(actualCash) ||
+      actualCash < 0
+    ) {
       return res.status(400).json({
         error: 'Enter a valid actual cash amount'
       });
     }
 
     /*
-     * Calculate today's sales again on the server.
-     * Never trust totals coming from the browser.
+     * Get all orders for this business date.
      */
     const start = `${businessDate}T00:00:00`;
     const end = `${businessDate}T23:59:59.999`;
 
-    const { data: orders, error: ordersError } =
-      await supabase
-        .from('orders')
-        .select('*')
-        .gte('time', start)
-        .lte('time', end);
+    const {
+      data: orders,
+      error: ordersError
+    } = await supabase
+      .from('orders')
+      .select('*')
+      .gte('time', start)
+      .lte('time', end);
 
     if (ordersError) {
       throw new Error(ordersError.message);
@@ -184,8 +211,9 @@ async function closeDay(req, res) {
       const total = Number(order.total || 0);
 
       const method =
-        String(order.payment_method || 'cash')
-          .toLowerCase();
+        String(
+          order.payment_method || 'cash'
+        ).toLowerCase();
 
       if (method === 'cash') {
         cashSales += total;
@@ -208,7 +236,7 @@ async function closeDay(req, res) {
       zomatoSales;
 
     /*
-     * Expected cash = cash payments received.
+     * Cash sales are the expected cash in drawer.
      */
     const expectedCash = cashSales;
 
@@ -216,20 +244,24 @@ async function closeDay(req, res) {
       actualCash - expectedCash;
 
     /*
-     * Don't allow the same business date
-     * to be closed twice.
+     * Check whether this date has already been closed.
      */
-    const { data: existing, error: existingError } =
-      await supabase
-        .from('day_closings')
-        .select('*')
-        .eq('business_date', businessDate)
-        .maybeSingle();
+    const {
+      data: existing,
+      error: existingError
+    } = await supabase
+      .from('day_closings')
+      .select('*')
+      .eq('business_date', businessDate)
+      .maybeSingle();
 
     if (existingError) {
       throw new Error(existingError.message);
     }
 
+    /*
+     * Prevent duplicate closing.
+     */
     if (
       existing &&
       existing.status === 'closed'
@@ -239,6 +271,8 @@ async function closeDay(req, res) {
           `Business day ${businessDate} is already closed`
       });
     }
+
+    const now = new Date().toISOString();
 
     const payload = {
       business_date: businessDate,
@@ -260,11 +294,12 @@ async function closeDay(req, res) {
       notes,
 
       closed_by: req.role || 'admin',
-      closed_at: new Date().toISOString(),
+
+      closed_at: now,
 
       status: 'closed',
 
-      updated_at: new Date().toISOString()
+      updated_at: now
     };
 
     let result;
@@ -290,6 +325,7 @@ async function closeDay(req, res) {
 
     res.json({
       ok: true,
+      businessDate,
       closing: result.data
     });
 
@@ -309,7 +345,9 @@ async function closeDay(req, res) {
 
 
 /*
- * Previous day closing history.
+ * Get previous closing history.
+ *
+ * This data is NEVER reset.
  */
 async function getHistory(req, res) {
   try {
