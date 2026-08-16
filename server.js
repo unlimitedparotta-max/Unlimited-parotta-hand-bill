@@ -15,6 +15,8 @@ const customerRoutes = require('./routes/customerRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const dayClosingRoutes = require('./routes/dayClosingRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const staffRoutes = require('./routes/staffRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -35,6 +37,7 @@ app.use('/', customerRoutes);
 app.use('/', reportRoutes);
 app.use('/', dayClosingRoutes);
 app.use('/', inventoryRoutes);
+app.use('/api/staff', staffRoutes);
 
 app.get('/health', (req, res) => res.send('ok'));
 
