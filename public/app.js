@@ -8306,133 +8306,188 @@ function renderStaffAccessTab() {
   const users =
     STATE.users || {};
 
-
   const adminPin =
     users.admin?.pin ||
     users.admin ||
     '';
-
 
   const staffPin =
     users.staff?.pin ||
     users.staff ||
     '';
 
-
   const barPin =
     users.bar?.pin ||
     users.bar ||
     '';
 
-
   return `
 
-    <div class="mgmt-block">
+    <div class="staff-admin-page">
 
-      <h3>
-        🔐 Staff Access
-      </h3>
+      <!-- ================= PIN ACCESS ================= -->
 
+      <div class="mgmt-block">
 
-      <p
-        style="
-          color:var(--muted);
-          font-size:13px;
-        "
-      >
-        Change the PIN used by each
-        counter.
-      </p>
+        <div class="staff-section-header">
 
+          <div>
+            <h3>🔐 Staff Access</h3>
 
-      <div class="filters">
-
-
-        <div class="field">
-
-          <label>
-            Admin PIN
-          </label>
-
-          <input
-            type="password"
-            data-pin="admin"
-            value="${escapeHtml(
-              adminPin
-            )}"
-          >
+            <p class="staff-muted">
+              Manage counter access PINs.
+            </p>
+          </div>
 
         </div>
 
+        <div class="filters">
 
-        <div class="field">
+          <div class="field">
+            <label>Admin PIN</label>
 
-          <label>
-            Unlimited Staff PIN
-          </label>
+            <input
+              type="password"
+              data-pin="admin"
+              value="${escapeHtml(adminPin)}"
+            >
+          </div>
 
-          <input
-            type="password"
-            data-pin="staff"
-            value="${escapeHtml(
-              staffPin
-            )}"
-          >
+          <div class="field">
+            <label>Unlimited Staff PIN</label>
+
+            <input
+              type="password"
+              data-pin="staff"
+              value="${escapeHtml(staffPin)}"
+            >
+          </div>
+
+          <div class="field">
+            <label>Rhythm Bar PIN</label>
+
+            <input
+              type="password"
+              data-pin="bar"
+              value="${escapeHtml(barPin)}"
+            >
+          </div>
 
         </div>
 
+        <div class="staff-actions-row">
 
-        <div class="field">
-
-          <label>
-            Rhythm Bar PIN
-          </label>
-
-          <input
-            type="password"
-            data-pin="bar"
-            value="${escapeHtml(
-              barPin
-            )}"
+          <button
+            class="tiny-btn"
+            id="save-pins-btn"
           >
+            💾 Save PINs
+          </button>
+
+          <span
+            id="pin-saved-msg"
+            class="staff-success-message"
+          ></span>
 
         </div>
-
 
       </div>
 
 
-      <div
-        style="
-          display:flex;
-          align-items:center;
-          gap:12px;
-          margin-top:15px;
-        "
-      >
+      <!-- ================= STAFF MANAGEMENT ================= -->
 
-        <button
-          class="tiny-btn"
-          id="save-pins-btn"
-        >
-          💾 Save PINs
-        </button>
+      <div class="mgmt-block">
+
+        <div class="staff-section-header">
+
+          <div>
+            <h3>👥 Staff Management</h3>
+
+            <p class="staff-muted">
+              Manage employees and their daily salary.
+            </p>
+          </div>
+
+          <button
+            class="tiny-btn"
+            id="add-staff-btn"
+          >
+            + Add Staff
+          </button>
+
+        </div>
+
+        <div id="staff-list-root">
+
+          <div class="staff-loading">
+            Loading staff...
+          </div>
+
+        </div>
+
+      </div>
 
 
-        <span
-          id="pin-saved-msg"
-          style="
-            color:var(--free);
-            font-size:13px;
-          "
-        ></span>
+      <!-- ================= TODAY ATTENDANCE ================= -->
+
+      <div class="mgmt-block">
+
+        <div class="staff-section-header">
+
+          <div>
+            <h3>📅 Today's Attendance</h3>
+
+            <p
+              class="staff-muted"
+              id="staff-today-date"
+            >
+              Loading date...
+            </p>
+          </div>
+
+        </div>
+
+        <div id="staff-attendance-root">
+
+          <div class="staff-loading">
+            Loading attendance...
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ================= TODAY SALARY ================= -->
+
+      <div class="mgmt-block">
+
+        <div class="staff-section-header">
+
+          <div>
+            <h3>💰 Today's Salary</h3>
+
+            <p class="staff-muted">
+              Daily salary, overtime and deductions.
+            </p>
+          </div>
+
+        </div>
+
+        <div id="staff-salary-root">
+
+          <div class="staff-loading">
+            Loading salary...
+          </div>
+
+        </div>
 
       </div>
 
     </div>
+
   `;
 }
-
 
 /* =========================================================
    ADMIN EVENTS
@@ -8694,7 +8749,7 @@ function bindAdminTabEvents() {
           );
 
 
-        } catch (error) {
+               } catch (error) {
 
           showToast(
             'Save failed: ' +
@@ -8703,9 +8758,10 @@ function bindAdminTabEvents() {
         }
       }
     );
+
+    loadStaffAdminTab();
   }
 }
-
 
 /* =========================================================
    MENU MANAGEMENT EVENTS
@@ -10451,6 +10507,1622 @@ async function sendBillWhatsAppPhoto(
   }
 }
 
+async function loadStaffAdminTab() {
+
+  const listRoot =
+    document.getElementById(
+      'staff-list-root'
+    );
+
+  const attendanceRoot =
+    document.getElementById(
+      'staff-attendance-root'
+    );
+
+  const salaryRoot =
+    document.getElementById(
+      'staff-salary-root'
+    );
+
+  if (
+    !listRoot ||
+    !attendanceRoot ||
+    !salaryRoot
+  ) {
+    return;
+  }
+
+  try {
+
+    const [
+      staffData,
+      todayData
+    ] = await Promise.all([
+      api('/api/staff'),
+      api('/api/staff/today')
+    ]);
+
+    renderStaffList(
+      staffData.staff || []
+    );
+
+      renderStaffToday(
+      todayData
+    );
+
+    renderStaffSalary(
+      salaryRoot,
+      todayData.staff || []
+    );
+
+    bindStaffSalaryEvents();
+
+  } catch (error) {
+
+    console.error(
+      'Staff loading error:',
+      error
+    );
+
+    listRoot.innerHTML = `
+      <div class="staff-error">
+        Could not load staff:
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+
+    attendanceRoot.innerHTML = `
+      <div class="staff-error">
+        Could not load attendance.
+      </div>
+    `;
+
+    salaryRoot.innerHTML = `
+      <div class="staff-error">
+        Could not load salary.
+      </div>
+    `;
+  }
+}
+
+function renderStaffList(items) {
+
+  const root =
+    document.getElementById(
+      'staff-list-root'
+    );
+
+  if (!root) return;
+
+  if (!items.length) {
+
+    root.innerHTML = `
+      <div class="staff-empty">
+        No staff members found.
+      </div>
+    `;
+
+    return;
+  }
+
+  root.innerHTML = `
+    <div class="staff-table-wrap">
+
+      <table class="staff-table">
+
+        <thead>
+          <tr>
+            <th>Staff</th>
+            <th>Role</th>
+            <th>Daily Salary</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${items.map(staff => `
+
+            <tr>
+
+              <td>
+                <strong>
+                  ${escapeHtml(staff.name || '')}
+                </strong>
+              </td>
+
+              <td>
+                ${escapeHtml(staff.role || '')}
+              </td>
+
+              <td>
+                ${rupee(
+                  Number(staff.daily_salary || 0)
+                )}
+                <small>/ day</small>
+              </td>
+
+              <td>
+                ${
+                  staff.active
+                    ? '<span class="staff-status active">🟢 Active</span>'
+                    : '<span class="staff-status inactive">🔴 Inactive</span>'
+                }
+              </td>
+
+            </tr>
+
+          `).join('')}
+
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
+
+
+function renderStaffToday(data) {
+
+  const attendanceRoot =
+    document.getElementById(
+      'staff-attendance-root'
+    );
+
+  const salaryRoot =
+    document.getElementById(
+      'staff-salary-root'
+    );
+
+  const dateRoot =
+    document.getElementById(
+      'staff-today-date'
+    );
+
+  if (
+    !attendanceRoot ||
+    !salaryRoot
+  ) {
+    return;
+  }
+
+  const staff =
+    data.staff || [];
+
+  if (dateRoot) {
+
+    dateRoot.textContent =
+      data.date
+        ? formatStaffDate(data.date)
+        : '';
+  }
+
+  renderStaffAttendance(
+    attendanceRoot,
+    staff
+  );
+
+  renderStaffSalary(
+    salaryRoot,
+    staff
+  );
+}
+
+
+function formatStaffDate(dateString) {
+
+  if (!dateString) return '';
+
+  const parts =
+    dateString.split('-');
+
+  if (parts.length !== 3) {
+    return dateString;
+  }
+
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+
+function openStaffModal(staff = null) {
+
+  const isEdit =
+    Boolean(staff);
+
+  const title =
+    isEdit
+      ? '✏️ Edit Staff'
+      : '👤 Add Staff';
+
+  const existing =
+    document.getElementById(
+      'staff-modal'
+    );
+
+  existing?.remove();
+
+  const modal =
+    document.createElement('div');
+
+  modal.id =
+    'staff-modal';
+
+  modal.className =
+    'modal-overlay';
+
+  modal.innerHTML = `
+
+    <div
+      class="modal"
+      style="
+        max-width:520px;
+        width:calc(100% - 30px);
+      "
+    >
+
+      <div class="modal-head">
+
+        <h3>
+          ${title}
+        </h3>
+
+        <button
+          class="modal-close"
+          id="staff-modal-close"
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div
+        style="
+          display:grid;
+          gap:14px;
+          padding:18px;
+        "
+      >
+
+        <div class="field">
+
+          <label>
+            Staff Name
+          </label>
+
+          <input
+            id="staff-form-name"
+            type="text"
+            placeholder="Enter staff name"
+            value="${escapeHtml(
+              staff?.name || ''
+            )}"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Role
+          </label>
+
+          <input
+            id="staff-form-role"
+            type="text"
+            placeholder="Server / Cashier / Manager"
+            value="${escapeHtml(
+              staff?.role || ''
+            )}"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Phone
+          </label>
+
+          <input
+            id="staff-form-phone"
+            type="tel"
+            placeholder="Phone number"
+            value="${escapeHtml(
+              staff?.phone || ''
+            )}"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Daily Salary
+          </label>
+
+          <input
+            id="staff-form-salary"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="₹"
+            value="${
+              staff?.daily_salary ?? ''
+            }"
+          >
+
+        </div>
+
+
+        <label
+          style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+          "
+        >
+
+          <input
+            id="staff-form-active"
+            type="checkbox"
+            ${
+              staff?.active !== false
+                ? 'checked'
+                : ''
+            }
+          >
+
+          Active staff
+
+        </label>
+
+
+        <div
+          id="staff-form-error"
+          style="
+            color:#c62828;
+            font-size:13px;
+          "
+        ></div>
+
+
+        <div
+          style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+          "
+        >
+
+          <button
+            class="tiny-btn"
+            id="staff-modal-cancel"
+          >
+            Cancel
+          </button>
+
+          <button
+            class="tiny-btn"
+            id="staff-modal-save"
+          >
+            ${
+              isEdit
+                ? '💾 Save Changes'
+                : '➕ Add Staff'
+            }
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+  document.body.appendChild(modal);
+
+
+  document
+    .getElementById(
+      'staff-modal-close'
+    )
+    ?.addEventListener(
+      'click',
+      () => modal.remove()
+    );
+
+
+  document
+    .getElementById(
+      'staff-modal-cancel'
+    )
+    ?.addEventListener(
+      'click',
+      () => modal.remove()
+    );
+
+
+  document
+    .getElementById(
+      'staff-modal-save'
+    )
+    ?.addEventListener(
+      'click',
+      async () => {
+
+        const name =
+          document
+            .getElementById(
+              'staff-form-name'
+            )
+            ?.value
+            .trim();
+
+        const role =
+          document
+            .getElementById(
+              'staff-form-role'
+            )
+            ?.value
+            .trim();
+
+        const phone =
+          document
+            .getElementById(
+              'staff-form-phone'
+            )
+            ?.value
+            .trim();
+
+        const daily_salary =
+          Number(
+            document
+              .getElementById(
+                'staff-form-salary'
+              )
+              ?.value
+          );
+
+        const active =
+          document
+            .getElementById(
+              'staff-form-active'
+            )
+            ?.checked;
+
+        const errorBox =
+          document.getElementById(
+            'staff-form-error'
+          );
+
+        if (!name) {
+
+          errorBox.textContent =
+            'Staff name is required.';
+
+          return;
+        }
+
+        if (
+          !Number.isFinite(
+            daily_salary
+          ) ||
+          daily_salary < 0
+        ) {
+
+          errorBox.textContent =
+            'Enter a valid daily salary.';
+
+          return;
+        }
+
+        const button =
+          document.getElementById(
+            'staff-modal-save'
+          );
+
+        button.disabled =
+          true;
+
+        button.textContent =
+          'Saving...';
+
+        try {
+
+          const payload = {
+            name,
+            role,
+            phone,
+            daily_salary,
+            active
+          };
+
+          if (isEdit) {
+
+            await api(
+              `/api/staff/${encodeURIComponent(
+                staff.id
+              )}`,
+              {
+                method: 'PUT',
+                body:
+                  JSON.stringify(
+                    payload
+                  )
+              }
+            );
+
+            showToast(
+              'Staff updated successfully.'
+            );
+
+          } else {
+
+            await api(
+              '/api/staff',
+              {
+                method: 'POST',
+                body:
+                  JSON.stringify(
+                    payload
+                  )
+              }
+            );
+
+            showToast(
+              'Staff added successfully.'
+            );
+          }
+
+          modal.remove();
+
+          await loadStaffAdminTab();
+
+        } catch (error) {
+
+          console.error(
+            'Staff save error:',
+            error
+          );
+
+          errorBox.textContent =
+            error.message;
+
+          button.disabled =
+            false;
+
+          button.textContent =
+            isEdit
+              ? '💾 Save Changes'
+              : '➕ Add Staff';
+        }
+
+      }
+    );
+
+}
+function renderStaffToday(data) {
+
+  const attendanceRoot =
+    document.getElementById(
+      'staff-attendance-root'
+    );
+
+  const salaryRoot =
+    document.getElementById(
+      'staff-salary-root'
+    );
+
+  const dateRoot =
+    document.getElementById(
+      'staff-today-date'
+    );
+
+  if (
+    !attendanceRoot ||
+    !salaryRoot
+  ) {
+    return;
+  }
+
+  const staff =
+    data.staff || [];
+
+  if (dateRoot) {
+
+    dateRoot.textContent =
+      data.date
+        ? formatStaffDate(data.date)
+        : '';
+  }
+
+  renderStaffAttendance(
+    attendanceRoot,
+    staff
+  );
+
+  renderStaffSalary(
+    salaryRoot,
+    staff
+  );
+}
+
+
+function formatStaffDate(dateString) {
+
+  if (!dateString) return '';
+
+  const parts =
+    dateString.split('-');
+
+  if (parts.length !== 3) {
+    return dateString;
+  }
+
+  return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function bindStaffListEvents() {
+
+  document
+    .querySelectorAll('[data-staff-edit]')
+    .forEach(button => {
+
+      button.addEventListener('click', async () => {
+
+        const id =
+          Number(button.dataset.staffEdit);
+
+        if (!id) return;
+
+        try {
+
+          const response =
+            await api('/api/staff');
+
+          const staff =
+            (response.staff || []).find(
+              person =>
+                Number(person.id) === id
+            );
+
+          if (!staff) {
+            showToast('Staff member not found.');
+            return;
+          }
+
+          openStaffModal(staff);
+
+        } catch (error) {
+
+          showToast(
+            'Could not load staff: ' +
+            error.message
+          );
+
+        }
+
+      });
+
+    });
+
+
+  document
+    .querySelectorAll('[data-staff-delete]')
+    .forEach(button => {
+
+      button.addEventListener('click', async () => {
+
+        const id =
+          Number(button.dataset.staffDelete);
+
+        if (!id) return;
+
+        if (!confirm(
+          'Deactivate this staff member? Attendance and salary history will be kept.'
+        )) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Processing...';
+
+        try {
+
+          await api(
+            `/api/staff/${encodeURIComponent(id)}`,
+            {
+              method: 'DELETE'
+            }
+          );
+
+          showToast(
+            'Staff deactivated.'
+          );
+
+          await loadStaffAdminTab();
+
+        } catch (error) {
+
+          showToast(
+            'Could not deactivate staff: ' +
+            error.message
+          );
+
+          button.disabled = false;
+          button.textContent = '🚫 Deactivate';
+        }
+
+      });
+
+    });
+
+
+  document
+    .querySelectorAll('[data-staff-activate]')
+    .forEach(button => {
+
+      button.addEventListener('click', async () => {
+
+        const id =
+          Number(button.dataset.staffActivate);
+
+        if (!id) return;
+
+        try {
+
+          const response =
+            await api('/api/staff');
+
+          const staff =
+            (response.staff || []).find(
+              person =>
+                Number(person.id) === id
+            );
+
+          if (!staff) return;
+
+          await api(
+            `/api/staff/${encodeURIComponent(id)}`,
+            {
+              method: 'PUT',
+
+              body: JSON.stringify({
+                name: staff.name,
+                role: staff.role,
+                phone: staff.phone,
+                daily_salary:
+                  staff.daily_salary,
+                active: true
+              })
+            }
+          );
+
+          showToast(
+            'Staff activated.'
+          );
+
+          await loadStaffAdminTab();
+
+        } catch (error) {
+
+          showToast(
+            'Could not activate staff: ' +
+            error.message
+          );
+
+        }
+
+      });
+
+    });
+
+
+  document
+    .getElementById('add-staff-btn')
+    ?.addEventListener(
+      'click',
+      () => openStaffModal()
+    );
+
+}
+
+function renderStaffAttendance(
+  root,
+  staff
+) {
+
+  if (!staff.length) {
+
+    root.innerHTML = `
+      <div class="staff-empty">
+        No active staff members.
+      </div>
+    `;
+
+    return;
+  }
+
+  root.innerHTML = `
+
+    <div class="staff-table-wrap">
+
+      <table class="staff-table">
+
+        <thead>
+
+          <tr>
+            <th>Staff</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Action</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${staff.map(person => {
+
+            const attendance =
+              person.attendance || {};
+
+            const status =
+              attendance.status ||
+              'not_marked';
+
+            const checkIn =
+              attendance.check_in
+                ? String(attendance.check_in).slice(0, 5)
+                : '';
+
+            const checkOut =
+              attendance.check_out
+                ? String(attendance.check_out).slice(0, 5)
+                : '';
+
+            return `
+
+              <tr>
+
+                <td>
+                  <strong>
+                    ${escapeHtml(
+                      person.name || ''
+                    )}
+                  </strong>
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    person.role || ''
+                  )}
+                </td>
+
+                <td>
+
+                  <select
+                    class="staff-attendance-input"
+                    data-attendance-status="${person.id}"
+                  >
+
+                    <option
+                      value="present"
+                      ${status === 'present' ? 'selected' : ''}
+                    >
+                      🟢 Present
+                    </option>
+
+                    <option
+                      value="absent"
+                      ${status === 'absent' ? 'selected' : ''}
+                    >
+                      🔴 Absent
+                    </option>
+
+                    <option
+                      value="half_day"
+                      ${status === 'half_day' ? 'selected' : ''}
+                    >
+                      🟡 Half Day
+                    </option>
+
+                    <option
+                      value="leave"
+                      ${status === 'leave' ? 'selected' : ''}
+                    >
+                      🔵 Leave
+                    </option>
+
+                  </select>
+
+                </td>
+
+                <td>
+
+                  <input
+                    type="time"
+                    class="staff-attendance-input"
+                    data-attendance-checkin="${person.id}"
+                    value="${checkIn}"
+                  >
+
+                </td>
+
+                <td>
+
+                  <input
+                    type="time"
+                    class="staff-attendance-input"
+                    data-attendance-checkout="${person.id}"
+                    value="${checkOut}"
+                  >
+
+                </td>
+
+                <td>
+
+                  <button
+                    class="tiny-btn"
+                    data-attendance-save="${person.id}"
+                  >
+                    💾 Save
+                  </button>
+
+                </td>
+
+              </tr>
+
+            `;
+
+          }).join('')}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+  bindStaffAttendanceEvents();
+}
+
+
+function bindStaffAttendanceEvents() {
+
+  document
+    .querySelectorAll(
+      '[data-attendance-save]'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const staffId =
+            Number(
+              button.dataset.attendanceSave
+            );
+
+          if (!staffId) return;
+
+          const statusInput =
+            document.querySelector(
+              `[data-attendance-status="${staffId}"]`
+            );
+
+          const checkInInput =
+            document.querySelector(
+              `[data-attendance-checkin="${staffId}"]`
+            );
+
+          const checkOutInput =
+            document.querySelector(
+              `[data-attendance-checkout="${staffId}"]`
+            );
+
+          if (!statusInput) return;
+
+          const status =
+            statusInput.value;
+
+          const checkIn =
+            checkInInput?.value || '';
+
+          const checkOut =
+            checkOutInput?.value || '';
+
+          button.disabled = true;
+          button.textContent = 'Saving...';
+
+          try {
+
+            await api(
+              '/api/staff/attendance',
+              {
+                method: 'POST',
+
+                body:
+                  JSON.stringify({
+                    staff_id: staffId,
+                    status,
+                    check_in:
+                      checkIn || null,
+                    check_out:
+                      checkOut || null
+                  })
+              }
+            );
+
+            showToast(
+              'Attendance saved successfully.'
+            );
+
+            await loadStaffAdminTab();
+
+          } catch (error) {
+
+            console.error(
+              'Attendance save error:',
+              error
+            );
+
+            showToast(
+              'Could not save attendance: ' +
+              error.message
+            );
+
+            button.disabled = false;
+            button.textContent = '💾 Save';
+          }
+
+        }
+      );
+
+    });
+
+}
+function renderStaffSalary(
+  root,
+  staff
+) {
+
+  if (!staff.length) {
+
+    root.innerHTML = `
+      <div class="staff-empty">
+        No salary records available.
+      </div>
+    `;
+
+    return;
+  }
+
+  root.innerHTML = `
+
+    <div class="staff-table-wrap">
+
+      <table class="staff-table">
+
+        <thead>
+
+          <tr>
+            <th>Staff</th>
+            <th>Attendance</th>
+            <th>Salary Amount</th>
+            <th>Overtime</th>
+            <th>Deduction</th>
+            <th>Net Salary</th>
+            <th>Payment</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${staff.map(person => {
+
+            const salary =
+              person.salary || {};
+
+            const salaryAmount =
+              salary.daily_salary ??
+              person.daily_salary ??
+              0;
+
+            const overtime =
+              salary.overtime || 0;
+
+            const deduction =
+              salary.deduction || 0;
+
+            const netSalary =
+              salary.net_salary ??
+              (
+                Number(salaryAmount) +
+                Number(overtime) -
+                Number(deduction)
+              );
+
+            const attendanceStatus =
+              salary.attendance_status ||
+              person.attendance?.status ||
+              'Not marked';
+
+            return `
+
+              <tr>
+
+                <td>
+                  <strong>
+                    ${escapeHtml(
+                      person.name || ''
+                    )}
+                  </strong>
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    attendanceStatus
+                  )}
+                </td>
+
+                <td>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="staff-salary-input"
+                    data-salary-amount="${person.id}"
+                    value="${Number(salaryAmount)}"
+                    style="width:110px;"
+                  >
+
+                </td>
+
+                <td>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="staff-salary-input"
+                    data-salary-overtime="${person.id}"
+                    value="${Number(overtime)}"
+                    style="width:90px;"
+                  >
+
+                </td>
+
+                <td>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="staff-salary-input"
+                    data-salary-deduction="${person.id}"
+                    value="${Number(deduction)}"
+                    style="width:90px;"
+                  >
+
+                </td>
+
+                <td>
+
+                  <strong
+                    data-salary-net="${person.id}"
+                  >
+                    ${rupee(
+                      Number(netSalary)
+                    )}
+                  </strong>
+
+                </td>
+
+                <td>
+
+                  ${
+                    salary.id
+                      ? (
+                          salary.paid
+                            ? `
+                              <span
+                                class="staff-payment paid"
+                              >
+                                🟢 Paid
+                              </span>
+                            `
+                            : `
+                              <div
+                                style="
+                                  display:flex;
+                                  gap:6px;
+                                  flex-wrap:wrap;
+                                "
+                              >
+
+                                <button
+                                  class="tiny-btn"
+                                  data-salary-save="${person.id}"
+                                >
+                                  💾 Save
+                                </button>
+
+                                <button
+                                  class="tiny-btn"
+                                  data-staff-pay="${salary.id}"
+                                >
+                                  💰 Mark Paid
+                                </button>
+
+                              </div>
+                            `
+                        )
+                      : `
+                        <button
+                          class="tiny-btn"
+                          data-salary-save="${person.id}"
+                        >
+                          💾 Save
+                        </button>
+                      `
+                  }
+
+                </td>
+
+              </tr>
+
+            `;
+
+          }).join('')}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+  bindStaffSalaryEvents();
+}
+
+
+function bindStaffSalaryEvents() {
+
+  /*
+   * Calculate Net Salary while typing:
+   *
+   * Salary Amount + Overtime - Deduction
+   */
+
+  document
+    .querySelectorAll(
+      '[data-salary-amount]'
+    )
+    .forEach(input => {
+
+      input.addEventListener(
+        'input',
+        () => {
+
+          const staffId =
+            input.dataset.salaryAmount;
+
+          const overtimeInput =
+            document.querySelector(
+              `[data-salary-overtime="${staffId}"]`
+            );
+
+          const deductionInput =
+            document.querySelector(
+              `[data-salary-deduction="${staffId}"]`
+            );
+
+          const netElement =
+            document.querySelector(
+              `[data-salary-net="${staffId}"]`
+            );
+
+          if (!netElement) return;
+
+          const amount =
+            Number(input.value || 0);
+
+          const overtime =
+            Number(
+              overtimeInput?.value || 0
+            );
+
+          const deduction =
+            Number(
+              deductionInput?.value || 0
+            );
+
+          const net =
+            Math.max(
+              0,
+              amount +
+              overtime -
+              deduction
+            );
+
+          netElement.textContent =
+            rupee(net);
+
+        }
+      );
+
+    });
+
+
+  document
+    .querySelectorAll(
+      '[data-salary-overtime], [data-salary-deduction]'
+    )
+    .forEach(input => {
+
+      input.addEventListener(
+        'input',
+        () => {
+
+          const staffId =
+            input.dataset.salaryOvertime ||
+            input.dataset.salaryDeduction;
+
+          const amountInput =
+            document.querySelector(
+              `[data-salary-amount="${staffId}"]`
+            );
+
+          const overtimeInput =
+            document.querySelector(
+              `[data-salary-overtime="${staffId}"]`
+            );
+
+          const deductionInput =
+            document.querySelector(
+              `[data-salary-deduction="${staffId}"]`
+            );
+
+          const netElement =
+            document.querySelector(
+              `[data-salary-net="${staffId}"]`
+            );
+
+          if (!netElement) return;
+
+          const amount =
+            Number(
+              amountInput?.value || 0
+            );
+
+          const overtime =
+            Number(
+              overtimeInput?.value || 0
+            );
+
+          const deduction =
+            Number(
+              deductionInput?.value || 0
+            );
+
+          const net =
+            Math.max(
+              0,
+              amount +
+              overtime -
+              deduction
+            );
+
+          netElement.textContent =
+            rupee(net);
+
+        }
+      );
+
+    });
+
+
+  /*
+   * Save manually entered salary
+   */
+
+  document
+    .querySelectorAll(
+      '[data-salary-save]'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const staffId =
+            Number(
+              button.dataset.salarySave
+            );
+
+          if (!staffId) return;
+
+          const amountInput =
+            document.querySelector(
+              `[data-salary-amount="${staffId}"]`
+            );
+
+          const overtimeInput =
+            document.querySelector(
+              `[data-salary-overtime="${staffId}"]`
+            );
+
+          const deductionInput =
+            document.querySelector(
+              `[data-salary-deduction="${staffId}"]`
+            );
+
+          const amount =
+            Number(
+              amountInput?.value || 0
+            );
+
+          const overtime =
+            Number(
+              overtimeInput?.value || 0
+            );
+
+          const deduction =
+            Number(
+              deductionInput?.value || 0
+            );
+
+          button.disabled = true;
+          button.textContent = 'Saving...';
+
+          try {
+
+            const todayData =
+              await api(
+                '/api/staff/today'
+              );
+
+            const person =
+              (todayData.staff || [])
+                .find(
+                  item =>
+                    Number(item.id) === staffId
+                );
+
+            const attendanceStatus =
+              person?.attendance?.status ||
+              person?.salary?.attendance_status ||
+              'present';
+
+            await api(
+              '/api/staff/salary',
+              {
+                method: 'POST',
+
+                body:
+                  JSON.stringify({
+                    staff_id: staffId,
+                    attendance_status:
+                      attendanceStatus,
+                    salary_amount:
+                      amount,
+                    overtime:
+                      overtime,
+                    deduction:
+                      deduction
+                  })
+              }
+            );
+
+            showToast(
+              'Salary saved successfully.'
+            );
+
+            await loadStaffAdminTab();
+
+          } catch (error) {
+
+            console.error(
+              'Salary save error:',
+              error
+            );
+
+            showToast(
+              'Could not save salary: ' +
+              error.message
+            );
+
+            button.disabled = false;
+            button.textContent = '💾 Save';
+          }
+
+        }
+      );
+
+    });
+
+
+  /*
+   * Mark salary as paid
+   */
+
+  document
+    .querySelectorAll(
+      '[data-staff-pay]'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const salaryId =
+            button.dataset.staffPay;
+
+          if (!salaryId) return;
+
+          const confirmed =
+            confirm(
+              'Mark this salary as PAID?'
+            );
+
+          if (!confirmed) return;
+
+          button.disabled = true;
+          button.textContent = 'Processing...';
+
+          try {
+
+            await api(
+              `/api/staff/salary/${encodeURIComponent(salaryId)}/paid`,
+              {
+                method: 'PATCH'
+              }
+            );
+
+            showToast(
+              'Salary marked as paid.'
+            );
+
+            await loadStaffAdminTab();
+
+          } catch (error) {
+
+            console.error(
+              'Salary payment error:',
+              error
+            );
+
+            showToast(
+              'Could not mark salary as paid: ' +
+              error.message
+            );
+
+            button.disabled = false;
+            button.textContent =
+              '💰 Mark Paid';
+          }
+
+        }
+      );
+
+    });
+
+}
 
 /* =========================================================
    INIT
